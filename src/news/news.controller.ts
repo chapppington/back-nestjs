@@ -9,9 +9,6 @@ import {
   UseGuards,
   UseInterceptors,
   UploadedFile,
-  ParseFilePipe,
-  MaxFileSizeValidator,
-  FileTypeValidator,
   Logger,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -31,7 +28,6 @@ export class NewsController {
   constructor(private readonly newsService: NewsService) {}
 
   @Post()
-  @UseGuards(RolesGuard)
   @Auth(Role.MANAGER)
   @UseInterceptors(
     FileInterceptor("image", {
@@ -74,7 +70,6 @@ export class NewsController {
   }
 
   @Patch(":id")
-  @UseGuards(RolesGuard)
   @Auth(Role.MANAGER)
   @UseInterceptors(
     FileInterceptor("image", {

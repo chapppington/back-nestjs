@@ -14,22 +14,34 @@ export class NewsService {
     return news;
   }
 
+  private calculateReadingTime(content: string): number {
+    // Average reading speed: 200-250 words per minute
+    const wordsPerMinute = 225;
+    const wordCount = content.trim().split(/\s+/).length;
+    const readingTime = Math.ceil(wordCount / wordsPerMinute);
+    return Math.max(1, readingTime); // Minimum reading time is 1 minute
+  }
+
   create(createNewsDto: CreateNewsDto) {
+    const readingTime = this.calculateReadingTime(createNewsDto.content);
     return this.prisma.news
       .create({
-        data: createNewsDto,
+        data: {
+          ...createNewsDto,
+          readingTime,
+        },
       })
       .then(this.addImageUrl.bind(this));
   }
 
-  findAll() {
-    return this.prisma.news
+  async findAll() {
+    const news = await this.prisma.news
       .findMany({
         orderBy: {
           createdAt: "desc",
         },
-      })
-      .then((news) => news.map(this.addImageUrl.bind(this)));
+      });
+    return news.map(this.addImageUrl.bind(this));
   }
 
   findOne(id: string) {
@@ -41,10 +53,15 @@ export class NewsService {
   }
 
   update(id: string, updateNewsDto: UpdateNewsDto) {
+    const data = { ...updateNewsDto };
+    if (updateNewsDto.content) {
+      data.readingTime = this.calculateReadingTime(updateNewsDto.content);
+    }
+
     return this.prisma.news
       .update({
         where: { id },
-        data: updateNewsDto,
+        data,
       })
       .then(this.addImageUrl.bind(this));
   }

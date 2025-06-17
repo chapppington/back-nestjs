@@ -1,4 +1,23 @@
-import { PartialType } from "@nestjs/mapped-types";
-import { CreateNewsDto } from "./create-news.dto";
+import { IsNotEmpty, IsString, IsOptional, IsNumber } from "class-validator";
 
-export class UpdateNewsDto extends PartialType(CreateNewsDto) {}
+export class UpdateNewsDto {
+  @IsString()
+  @IsOptional()
+  category?: string;
+
+  @IsString()
+  @IsOptional()
+  title?: string;
+
+  @IsString()
+  @IsOptional()
+  content?: string;
+
+  @IsString()
+  @IsOptional()
+  image?: string;
+
+  @IsNumber()
+  @IsOptional()
+  readingTime?: number;
+}
