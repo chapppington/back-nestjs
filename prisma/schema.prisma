@@ -34,3 +34,15 @@ enum Role {
   MANAGER
   ADMIN
 }
+
+model News {
+  id        String   @id @default(cuid())
+  category  String
+  title     String
+  content   String
+  image     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("news")
+}
