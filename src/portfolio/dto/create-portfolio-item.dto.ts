@@ -14,6 +14,10 @@ export class CreatePortfolioItemDto {
 
   @IsString()
   @IsOptional()
+  slug?: string;
+
+  @IsString()
+  @IsOptional()
   poster?: string;
 
   @IsInt()

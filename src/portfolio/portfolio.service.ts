@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma.service";
 import { CreatePortfolioItemDto } from "./dto/create-portfolio-item.dto";
 import { UpdatePortfolioItemDto } from "./dto/update-portfolio-item.dto";
+import { generateSlug } from "src/utils/transliteration";
 
 @Injectable()
 export class PortfolioService {
@@ -32,6 +33,7 @@ export class PortfolioService {
     const data = {
       ...createPortfolioItemDto,
       year: parseInt(createPortfolioItemDto.year.toString()),
+      slug: generateSlug(createPortfolioItemDto.name),
     };
     return this.prisma.portfolioItem
       .create({
@@ -64,6 +66,11 @@ export class PortfolioService {
         ? parseInt(updatePortfolioItemDto.year.toString())
         : undefined,
     };
+
+    if (updatePortfolioItemDto.name) {
+      data.slug = generateSlug(updatePortfolioItemDto.name);
+    }
+
     return this.prisma.portfolioItem
       .update({
         where: { id },

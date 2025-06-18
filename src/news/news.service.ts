@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma.service";
 import { CreateNewsDto } from "./dto/create-news.dto";
 import { UpdateNewsDto } from "./dto/update-news.dto";
+import { generateSlug } from "src/utils/transliteration";
 
 @Injectable()
 export class NewsService {
@@ -24,23 +25,25 @@ export class NewsService {
 
   create(createNewsDto: CreateNewsDto) {
     const readingTime = this.calculateReadingTime(createNewsDto.content);
+    const slug = generateSlug(createNewsDto.title);
+
     return this.prisma.news
       .create({
         data: {
           ...createNewsDto,
           readingTime,
+          slug,
         },
       })
       .then(this.addImageUrl.bind(this));
   }
 
   async findAll() {
-    const news = await this.prisma.news
-      .findMany({
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
+    const news = await this.prisma.news.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
     return news.map(this.addImageUrl.bind(this));
   }
 
@@ -56,6 +59,9 @@ export class NewsService {
     const data = { ...updateNewsDto };
     if (updateNewsDto.content) {
       data.readingTime = this.calculateReadingTime(updateNewsDto.content);
+    }
+    if (updateNewsDto.title) {
+      data.slug = generateSlug(updateNewsDto.title);
     }
 
     return this.prisma.news

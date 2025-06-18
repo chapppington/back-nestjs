@@ -5,8 +5,12 @@ import {
   IsInt,
   IsArray,
 } from "class-validator";
+import { PartialType } from "@nestjs/mapped-types";
+import { CreatePortfolioItemDto } from "./create-portfolio-item.dto";
 
-export class UpdatePortfolioItemDto {
+export class UpdatePortfolioItemDto extends PartialType(
+  CreatePortfolioItemDto
+) {
   @IsString()
   @IsOptional()
   name?: string;
@@ -79,4 +83,6 @@ export class UpdatePortfolioItemDto {
   @IsString()
   @IsOptional()
   reviewRole?: string;
+
+  slug?: string;
 }

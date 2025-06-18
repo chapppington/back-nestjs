@@ -39,6 +39,7 @@ model News {
   id        String   @id @default(cuid())
   category  String
   title     String
+  slug      String   @unique
   content   String
   image     String?
   readingTime Int    @default(0) @map("reading_time")
@@ -51,6 +52,7 @@ model News {
 model PortfolioItem {
   id        String   @id @default(cuid())
   name      String
+  slug      String   @unique
   poster    String?
   year      Int?     // Making year optional initially
 

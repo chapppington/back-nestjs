@@ -20,4 +20,8 @@ export class CreateNewsDto {
   @IsNumber()
   @IsOptional()
   readingTime?: number;
+
+  @IsString()
+  @IsOptional()
+  slug?: string;
 }
