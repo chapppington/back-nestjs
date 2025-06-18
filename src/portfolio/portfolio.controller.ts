@@ -99,6 +99,11 @@ export class PortfolioController {
     return this.portfolioService.findOne(id);
   }
 
+  @Get("slug/:slug")
+  findBySlug(@Param("slug") slug: string) {
+    return this.portfolioService.findBySlug(slug);
+  }
+
   @Patch(":id")
   @Auth(Role.MANAGER)
   @UseInterceptors(

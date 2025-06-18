@@ -59,6 +59,14 @@ export class PortfolioService {
       .then(this.addImageUrls.bind(this));
   }
 
+  findBySlug(slug: string) {
+    return this.prisma.portfolioItem
+      .findUnique({
+        where: { slug },
+      })
+      .then(this.addImageUrls.bind(this));
+  }
+
   update(id: string, updatePortfolioItemDto: UpdatePortfolioItemDto) {
     const data = {
       ...updatePortfolioItemDto,
