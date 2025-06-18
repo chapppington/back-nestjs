@@ -11,19 +11,31 @@ export class PortfolioService {
     if (item.poster) {
       item.posterUrl = `/uploads/portfolio/${item.poster}`;
     }
-    if (item.solutionImage) {
-      item.solutionImageUrl = `/uploads/portfolio/${item.solutionImage}`;
+    if (item.solutionImages && item.solutionImages.length > 0) {
+      item.solutionImageUrls = item.solutionImages.map(
+        (image: string) => `/uploads/portfolio/${image}`
+      );
     }
     if (item.reviewImage) {
       item.reviewImageUrl = `/uploads/portfolio/${item.reviewImage}`;
+    }
+    if (item.previewVideoPath) {
+      item.previewVideoUrl = `/uploads/portfolio/${item.previewVideoPath}`;
+    }
+    if (item.fullVideoPath) {
+      item.fullVideoUrl = `/uploads/portfolio/${item.fullVideoPath}`;
     }
     return item;
   }
 
   create(createPortfolioItemDto: CreatePortfolioItemDto) {
+    const data = {
+      ...createPortfolioItemDto,
+      year: parseInt(createPortfolioItemDto.year.toString()),
+    };
     return this.prisma.portfolioItem
       .create({
-        data: createPortfolioItemDto,
+        data,
       })
       .then(this.addImageUrls.bind(this));
   }
@@ -46,10 +58,16 @@ export class PortfolioService {
   }
 
   update(id: string, updatePortfolioItemDto: UpdatePortfolioItemDto) {
+    const data = {
+      ...updatePortfolioItemDto,
+      year: updatePortfolioItemDto.year
+        ? parseInt(updatePortfolioItemDto.year.toString())
+        : undefined,
+    };
     return this.prisma.portfolioItem
       .update({
         where: { id },
-        data: updatePortfolioItemDto,
+        data,
       })
       .then(this.addImageUrls.bind(this));
   }

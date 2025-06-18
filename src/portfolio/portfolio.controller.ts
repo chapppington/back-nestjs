@@ -31,8 +31,10 @@ export class PortfolioController {
     FileFieldsInterceptor(
       [
         { name: "poster", maxCount: 1 },
-        { name: "solutionImage", maxCount: 1 },
+        { name: "solutionImages", maxCount: 2 },
         { name: "reviewImage", maxCount: 1 },
+        { name: "previewVideo", maxCount: 1 },
+        { name: "fullVideo", maxCount: 1 },
       ],
       {
         storage: diskStorage({
@@ -51,8 +53,10 @@ export class PortfolioController {
     @UploadedFiles()
     files?: {
       poster?: Express.Multer.File[];
-      solutionImage?: Express.Multer.File[];
+      solutionImages?: Express.Multer.File[];
       reviewImage?: Express.Multer.File[];
+      previewVideo?: Express.Multer.File[];
+      fullVideo?: Express.Multer.File[];
     }
   ) {
     // Convert hasReview from string to boolean if it exists
@@ -65,11 +69,20 @@ export class PortfolioController {
       if (files.poster?.[0]) {
         createPortfolioItemDto.poster = files.poster[0].filename;
       }
-      if (files.solutionImage?.[0]) {
-        createPortfolioItemDto.solutionImage = files.solutionImage[0].filename;
+      if (files.solutionImages?.length) {
+        createPortfolioItemDto.solutionImages = files.solutionImages.map(
+          (file) => file.filename
+        );
       }
       if (files.reviewImage?.[0]) {
         createPortfolioItemDto.reviewImage = files.reviewImage[0].filename;
+      }
+      if (files.previewVideo?.[0]) {
+        createPortfolioItemDto.previewVideoPath =
+          files.previewVideo[0].filename;
+      }
+      if (files.fullVideo?.[0]) {
+        createPortfolioItemDto.fullVideoPath = files.fullVideo[0].filename;
       }
     }
 
@@ -92,8 +105,10 @@ export class PortfolioController {
     FileFieldsInterceptor(
       [
         { name: "poster", maxCount: 1 },
-        { name: "solutionImage", maxCount: 1 },
+        { name: "solutionImages", maxCount: 2 },
         { name: "reviewImage", maxCount: 1 },
+        { name: "previewVideo", maxCount: 1 },
+        { name: "fullVideo", maxCount: 1 },
       ],
       {
         storage: diskStorage({
@@ -113,8 +128,10 @@ export class PortfolioController {
     @UploadedFiles()
     files?: {
       poster?: Express.Multer.File[];
-      solutionImage?: Express.Multer.File[];
+      solutionImages?: Express.Multer.File[];
       reviewImage?: Express.Multer.File[];
+      previewVideo?: Express.Multer.File[];
+      fullVideo?: Express.Multer.File[];
     }
   ) {
     // Convert hasReview from string to boolean if it exists
@@ -127,11 +144,20 @@ export class PortfolioController {
       if (files.poster?.[0]) {
         updatePortfolioItemDto.poster = files.poster[0].filename;
       }
-      if (files.solutionImage?.[0]) {
-        updatePortfolioItemDto.solutionImage = files.solutionImage[0].filename;
+      if (files.solutionImages?.length) {
+        updatePortfolioItemDto.solutionImages = files.solutionImages.map(
+          (file) => file.filename
+        );
       }
       if (files.reviewImage?.[0]) {
         updatePortfolioItemDto.reviewImage = files.reviewImage[0].filename;
+      }
+      if (files.previewVideo?.[0]) {
+        updatePortfolioItemDto.previewVideoPath =
+          files.previewVideo[0].filename;
+      }
+      if (files.fullVideo?.[0]) {
+        updatePortfolioItemDto.fullVideoPath = files.fullVideo[0].filename;
       }
     }
     return this.portfolioService.update(id, updatePortfolioItemDto);

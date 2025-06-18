@@ -1,4 +1,11 @@
-import { IsNotEmpty, IsString, IsOptional, IsBoolean } from "class-validator";
+import {
+  IsNotEmpty,
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsInt,
+  IsArray,
+} from "class-validator";
 
 export class CreatePortfolioItemDto {
   @IsString()
@@ -8,6 +15,10 @@ export class CreatePortfolioItemDto {
   @IsString()
   @IsOptional()
   poster?: string;
+
+  @IsInt()
+  @IsNotEmpty()
+  year: number;
 
   @IsString()
   @IsNotEmpty()
@@ -33,9 +44,18 @@ export class CreatePortfolioItemDto {
   @IsNotEmpty()
   solutionSubdescription: string;
 
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  solutionImages?: string[];
+
   @IsString()
   @IsOptional()
-  solutionImage?: string;
+  previewVideoPath?: string;
+
+  @IsString()
+  @IsOptional()
+  fullVideoPath?: string;
 
   @IsBoolean()
   @IsOptional()

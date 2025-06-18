@@ -1,4 +1,10 @@
-import { IsString, IsOptional, IsBoolean } from "class-validator";
+import {
+  IsString,
+  IsOptional,
+  IsBoolean,
+  IsInt,
+  IsArray,
+} from "class-validator";
 
 export class UpdatePortfolioItemDto {
   @IsString()
@@ -8,6 +14,10 @@ export class UpdatePortfolioItemDto {
   @IsString()
   @IsOptional()
   poster?: string;
+
+  @IsInt()
+  @IsOptional()
+  year?: number;
 
   @IsString()
   @IsOptional()
@@ -33,9 +43,18 @@ export class UpdatePortfolioItemDto {
   @IsOptional()
   solutionSubdescription?: string;
 
+  @IsArray()
+  @IsString({ each: true })
+  @IsOptional()
+  solutionImages?: string[];
+
   @IsString()
   @IsOptional()
-  solutionImage?: string;
+  previewVideoPath?: string;
+
+  @IsString()
+  @IsOptional()
+  fullVideoPath?: string;
 
   @IsBoolean()
   @IsOptional()

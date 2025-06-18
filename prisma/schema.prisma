@@ -52,6 +52,7 @@ model PortfolioItem {
   id        String   @id @default(cuid())
   name      String
   poster    String?
+  year      Int?     // Making year optional initially
 
   taskTitle       String  @map("task_title")
   taskDescription String  @map("task_description")
@@ -60,7 +61,9 @@ model PortfolioItem {
   solutionDescription   String  @map("solution_description")
   solutionSubtitle      String  @map("solution_subtitle")
   solutionSubdescription String @map("solution_subdescription")
-  solutionImage         String? @map("solution_image")
+  solutionImages        String[] @map("solution_images")
+  previewVideoPath      String? @map("preview_video_path")
+  fullVideoPath         String? @map("full_video_path")
 
   hasReview    Boolean @default(false) @map("has_review")
   reviewTitle  String? @map("review_title")
