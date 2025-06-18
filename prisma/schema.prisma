@@ -47,3 +47,30 @@ model News {
 
   @@map("news")
 }
+
+model PortfolioItem {
+  id        String   @id @default(cuid())
+  name      String
+  poster    String?
+
+  taskTitle       String  @map("task_title")
+  taskDescription String  @map("task_description")
+
+  solutionTitle         String  @map("solution_title")
+  solutionDescription   String  @map("solution_description")
+  solutionSubtitle      String  @map("solution_subtitle")
+  solutionSubdescription String @map("solution_subdescription")
+  solutionImage         String? @map("solution_image")
+
+  hasReview    Boolean @default(false) @map("has_review")
+  reviewTitle  String? @map("review_title")
+  reviewText   String? @map("review_text")
+  reviewName   String? @map("review_name")
+  reviewImage  String? @map("review_image")
+  reviewRole   String? @map("review_role")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("portfolio_items")
+}
