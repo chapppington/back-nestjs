@@ -84,5 +84,9 @@ export class UpdatePortfolioItemDto extends PartialType(
   @IsOptional()
   reviewRole?: string;
 
+  @IsString()
+  @IsOptional()
+  description?: string;
+
   slug?: string;
 }

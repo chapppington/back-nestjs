@@ -17,8 +17,8 @@ export class CreatePortfolioItemDto {
   slug?: string;
 
   @IsString()
-  @IsOptional()
-  poster?: string;
+  @IsNotEmpty()
+  poster: string;
 
   @IsInt()
   @IsNotEmpty()
@@ -84,4 +84,8 @@ export class CreatePortfolioItemDto {
   @IsString()
   @IsOptional()
   reviewRole?: string;
+
+  @IsString()
+  @IsNotEmpty()
+  description: string;
 }

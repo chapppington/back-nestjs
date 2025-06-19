@@ -54,8 +54,9 @@ model PortfolioItem {
   id        String   @id @default(cuid())
   name      String
   slug      String   @unique
-  poster    String?
-  year      Int?     // Making year optional initially
+  poster    String
+  year      Int     // Making year optional initially
+  description String // Optional description for the portfolio item
 
   taskTitle       String  @map("task_title")
   taskDescription String  @map("task_description")
