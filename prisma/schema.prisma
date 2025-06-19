@@ -41,6 +41,7 @@ model News {
   title     String
   slug      String   @unique
   content   String
+  shortContent String? @map("short_content")
   image     String?
   readingTime Int    @default(0) @map("reading_time")
   createdAt DateTime @default(now()) @map("created_at")

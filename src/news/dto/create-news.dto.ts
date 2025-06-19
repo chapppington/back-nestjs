@@ -24,4 +24,8 @@ export class CreateNewsDto {
   @IsString()
   @IsOptional()
   slug?: string;
+
+  @IsString()
+  @IsOptional()
+  shortContent?: string;
 }
