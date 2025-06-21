@@ -86,4 +86,9 @@ export class CreateProductDto {
   @ValidateNested({ each: true })
   @Type(() => DetailedDescriptionItemDto)
   detailedDescription: { items: DetailedDescriptionItemDto[] };
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  advantageImages?: string[];
 }

@@ -7,27 +7,39 @@ import { UpdateProductDto } from "./dto/update-product.dto";
 export class ProductService {
   constructor(private prisma: PrismaService) {}
 
+  private addImageUrls(product: any) {
+    if (product.advantageImages && product.advantageImages.length > 0) {
+      product.advantageImageUrls = product.advantageImages.map(
+        (image: string) => `/uploads/products/${image}`
+      );
+    }
+    return product;
+  }
+
   create(createProductDto: CreateProductDto) {
-    return this.prisma.product.create({
-      data: {
-        category: createProductDto.category,
-        name: createProductDto.name,
-        description: createProductDto.description,
-        importantCharacteristics: JSON.parse(
-          JSON.stringify(createProductDto.importantCharacteristics)
-        ),
-        advantages: JSON.parse(JSON.stringify(createProductDto.advantages)),
-        simpleDescription: JSON.parse(
-          JSON.stringify(createProductDto.simpleDescription)
-        ),
-        detailedDescription: JSON.parse(
-          JSON.stringify(createProductDto.detailedDescription)
-        ),
-      },
-      include: {
-        portfolioItems: true,
-      },
-    });
+    return this.prisma.product
+      .create({
+        data: {
+          category: createProductDto.category,
+          name: createProductDto.name,
+          description: createProductDto.description,
+          importantCharacteristics: JSON.parse(
+            JSON.stringify(createProductDto.importantCharacteristics)
+          ),
+          advantages: JSON.parse(JSON.stringify(createProductDto.advantages)),
+          simpleDescription: JSON.parse(
+            JSON.stringify(createProductDto.simpleDescription)
+          ),
+          detailedDescription: JSON.parse(
+            JSON.stringify(createProductDto.detailedDescription)
+          ),
+          advantageImages: createProductDto.advantageImages || [],
+        },
+        include: {
+          portfolioItems: true,
+        },
+      })
+      .then(this.addImageUrls.bind(this));
   }
 
   async findAll() {
@@ -39,7 +51,7 @@ export class ProductService {
         createdAt: "desc",
       },
     });
-    return products;
+    return products.map(this.addImageUrls.bind(this));
   }
 
   async getCatalog(category?: string, page: number = 1, limit: number = 10) {
@@ -65,7 +77,7 @@ export class ProductService {
     const totalPages = Math.ceil(total / limit);
 
     return {
-      products,
+      products: products.map(this.addImageUrls.bind(this)),
       pagination: {
         page,
         limit,
@@ -78,24 +90,28 @@ export class ProductService {
   }
 
   findOne(id: string) {
-    return this.prisma.product.findUnique({
-      where: { id },
-      include: {
-        portfolioItems: true,
-      },
-    });
+    return this.prisma.product
+      .findUnique({
+        where: { id },
+        include: {
+          portfolioItems: true,
+        },
+      })
+      .then(this.addImageUrls.bind(this));
   }
 
   findByCategory(category: string) {
-    return this.prisma.product.findMany({
-      where: { category },
-      include: {
-        portfolioItems: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    return this.prisma.product
+      .findMany({
+        where: { category },
+        include: {
+          portfolioItems: true,
+        },
+        orderBy: {
+          createdAt: "desc",
+        },
+      })
+      .then((products) => products.map(this.addImageUrls.bind(this)));
   }
 
   update(id: string, updateProductDto: UpdateProductDto) {
@@ -123,14 +139,18 @@ export class ProductService {
       updateData.detailedDescription = JSON.parse(
         JSON.stringify(updateProductDto.detailedDescription)
       );
+    if (updateProductDto.advantageImages !== undefined)
+      updateData.advantageImages = updateProductDto.advantageImages;
 
-    return this.prisma.product.update({
-      where: { id },
-      data: updateData,
-      include: {
-        portfolioItems: true,
-      },
-    });
+    return this.prisma.product
+      .update({
+        where: { id },
+        data: updateData,
+        include: {
+          portfolioItems: true,
+        },
+      })
+      .then(this.addImageUrls.bind(this));
   }
 
   remove(id: string) {
@@ -140,30 +160,34 @@ export class ProductService {
   }
 
   async connectPortfolioItem(productId: string, portfolioItemId: string) {
-    return this.prisma.product.update({
-      where: { id: productId },
-      data: {
-        portfolioItems: {
-          connect: { id: portfolioItemId },
+    return this.prisma.product
+      .update({
+        where: { id: productId },
+        data: {
+          portfolioItems: {
+            connect: { id: portfolioItemId },
+          },
         },
-      },
-      include: {
-        portfolioItems: true,
-      },
-    });
+        include: {
+          portfolioItems: true,
+        },
+      })
+      .then(this.addImageUrls.bind(this));
   }
 
   async disconnectPortfolioItem(productId: string, portfolioItemId: string) {
-    return this.prisma.product.update({
-      where: { id: productId },
-      data: {
-        portfolioItems: {
-          disconnect: { id: portfolioItemId },
+    return this.prisma.product
+      .update({
+        where: { id: productId },
+        data: {
+          portfolioItems: {
+            disconnect: { id: portfolioItemId },
+          },
         },
-      },
-      include: {
-        portfolioItems: true,
-      },
-    });
+        include: {
+          portfolioItems: true,
+        },
+      })
+      .then(this.addImageUrls.bind(this));
   }
 }

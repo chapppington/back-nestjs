@@ -128,6 +128,9 @@ model Product {
   simpleDescription Json @map("simple_description") // JSON с простым описанием
   detailedDescription Json @map("detailed_description") // JSON с детальным описанием
   
+  // Поля для изображений
+  advantageImages String[] @map("advantage_images") // Пути к изображениям преимуществ
+  
   // Связь с кейсами применения (PortfolioItem)
   portfolioItems PortfolioItem[] @relation("ProductPortfolioItems")
   

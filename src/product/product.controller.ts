@@ -8,12 +8,17 @@ import {
   Delete,
   Logger,
   Query,
+  UseInterceptors,
+  UploadedFiles,
 } from "@nestjs/common";
+import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { ProductService } from "./product.service";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { Role } from "@prisma/client";
 import { Auth } from "@/auth/decorators/auth.decorator";
+import { diskStorage } from "multer";
+import { extname } from "path";
 
 @Controller("products")
 export class ProductController {
@@ -23,7 +28,31 @@ export class ProductController {
 
   @Post()
   @Auth(Role.MANAGER)
-  create(@Body() createProductDto: CreateProductDto) {
+  @UseInterceptors(
+    FileFieldsInterceptor([{ name: "advantageImages", maxCount: 5 }], {
+      storage: diskStorage({
+        destination: "./uploads/products",
+        filename: (req, file, callback) => {
+          const uniqueSuffix =
+            Date.now() + "-" + Math.round(Math.random() * 1e9);
+          callback(null, `${uniqueSuffix}${extname(file.originalname)}`);
+        },
+      }),
+    })
+  )
+  create(
+    @Body() createProductDto: CreateProductDto,
+    @UploadedFiles()
+    files?: {
+      advantageImages?: Express.Multer.File[];
+    }
+  ) {
+    if (files?.advantageImages?.length) {
+      createProductDto.advantageImages = files.advantageImages.map(
+        (file) => file.filename
+      );
+    }
+
     return this.productService.create(createProductDto);
   }
 
@@ -56,7 +85,32 @@ export class ProductController {
 
   @Patch(":id")
   @Auth(Role.MANAGER)
-  update(@Param("id") id: string, @Body() updateProductDto: UpdateProductDto) {
+  @UseInterceptors(
+    FileFieldsInterceptor([{ name: "advantageImages", maxCount: 5 }], {
+      storage: diskStorage({
+        destination: "./uploads/products",
+        filename: (req, file, callback) => {
+          const uniqueSuffix =
+            Date.now() + "-" + Math.round(Math.random() * 1e9);
+          callback(null, `${uniqueSuffix}${extname(file.originalname)}`);
+        },
+      }),
+    })
+  )
+  update(
+    @Param("id") id: string,
+    @Body() updateProductDto: UpdateProductDto,
+    @UploadedFiles()
+    files?: {
+      advantageImages?: Express.Multer.File[];
+    }
+  ) {
+    if (files?.advantageImages?.length) {
+      updateProductDto.advantageImages = files.advantageImages.map(
+        (file) => file.filename
+      );
+    }
+
     return this.productService.update(id, updateProductDto);
   }
 
