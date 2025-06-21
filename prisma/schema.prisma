@@ -130,6 +130,7 @@ model Product {
   
   // Поля для изображений
   advantageImages String[] @map("advantage_images") // Пути к изображениям преимуществ
+  model_3d_url    String?  @map("model_3d_url") // Путь к 3D модели
   
   // Связь с кейсами применения (PortfolioItem)
   portfolioItems PortfolioItem[] @relation("ProductPortfolioItems")

@@ -7,39 +7,47 @@ import { UpdateProductDto } from "./dto/update-product.dto";
 export class ProductService {
   constructor(private prisma: PrismaService) {}
 
-  private addImageUrls(product: any) {
+  private addFullUrls(product: any) {
     if (product.advantageImages && product.advantageImages.length > 0) {
       product.advantageImageUrls = product.advantageImages.map(
         (image: string) => `/uploads/products/${image}`
       );
     }
+    if (product.model_3d_url) {
+      product.model_3d_url = `/uploads/products/${product.model_3d_url}`;
+    }
     return product;
   }
 
   create(createProductDto: CreateProductDto) {
+    const { portfolioItems, ...restDto } = createProductDto as any;
+
     return this.prisma.product
       .create({
         data: {
-          category: createProductDto.category,
-          name: createProductDto.name,
-          description: createProductDto.description,
+          ...restDto,
           importantCharacteristics: JSON.parse(
-            JSON.stringify(createProductDto.importantCharacteristics)
+            createProductDto.importantCharacteristics as any
           ),
-          advantages: JSON.parse(JSON.stringify(createProductDto.advantages)),
+          advantages: JSON.parse(createProductDto.advantages as any),
           simpleDescription: JSON.parse(
-            JSON.stringify(createProductDto.simpleDescription)
+            createProductDto.simpleDescription as any
           ),
           detailedDescription: JSON.parse(
-            JSON.stringify(createProductDto.detailedDescription)
+            createProductDto.detailedDescription as any
           ),
           advantageImages: createProductDto.advantageImages || [],
+          portfolioItems: {
+            connect: JSON.parse(portfolioItems || "[]").map((id: string) => ({
+              id,
+            })),
+          },
         },
         include: {
           portfolioItems: true,
         },
       })
-      .then(this.addImageUrls.bind(this));
+      .then(this.addFullUrls.bind(this));
   }
 
   async findAll() {
@@ -51,7 +59,7 @@ export class ProductService {
         createdAt: "desc",
       },
     });
-    return products.map(this.addImageUrls.bind(this));
+    return products.map(this.addFullUrls.bind(this));
   }
 
   async getCatalog(category?: string, page: number = 1, limit: number = 10) {
@@ -77,7 +85,7 @@ export class ProductService {
     const totalPages = Math.ceil(total / limit);
 
     return {
-      products: products.map(this.addImageUrls.bind(this)),
+      products: products.map(this.addFullUrls.bind(this)),
       pagination: {
         page,
         limit,
@@ -97,7 +105,7 @@ export class ProductService {
           portfolioItems: true,
         },
       })
-      .then(this.addImageUrls.bind(this));
+      .then(this.addFullUrls.bind(this));
   }
 
   findByCategory(category: string) {
@@ -111,36 +119,33 @@ export class ProductService {
           createdAt: "desc",
         },
       })
-      .then((products) => products.map(this.addImageUrls.bind(this)));
+      .then((products) => products.map(this.addFullUrls.bind(this)));
   }
 
   update(id: string, updateProductDto: UpdateProductDto) {
-    const updateData: any = {};
+    const { portfolioItems, ...restDto } = updateProductDto as any;
+    const updateData: any = { ...restDto };
 
-    if (updateProductDto.category !== undefined)
-      updateData.category = updateProductDto.category;
-    if (updateProductDto.name !== undefined)
-      updateData.name = updateProductDto.name;
-    if (updateProductDto.description !== undefined)
-      updateData.description = updateProductDto.description;
-    if (updateProductDto.importantCharacteristics !== undefined)
+    if (updateProductDto.importantCharacteristics)
       updateData.importantCharacteristics = JSON.parse(
-        JSON.stringify(updateProductDto.importantCharacteristics)
+        updateProductDto.importantCharacteristics as any
       );
-    if (updateProductDto.advantages !== undefined)
-      updateData.advantages = JSON.parse(
-        JSON.stringify(updateProductDto.advantages)
-      );
-    if (updateProductDto.simpleDescription !== undefined)
+    if (updateProductDto.advantages)
+      updateData.advantages = JSON.parse(updateProductDto.advantages as any);
+    if (updateProductDto.simpleDescription)
       updateData.simpleDescription = JSON.parse(
-        JSON.stringify(updateProductDto.simpleDescription)
+        updateProductDto.simpleDescription as any
       );
-    if (updateProductDto.detailedDescription !== undefined)
+    if (updateProductDto.detailedDescription)
       updateData.detailedDescription = JSON.parse(
-        JSON.stringify(updateProductDto.detailedDescription)
+        updateProductDto.detailedDescription as any
       );
-    if (updateProductDto.advantageImages !== undefined)
-      updateData.advantageImages = updateProductDto.advantageImages;
+
+    if (portfolioItems) {
+      updateData.portfolioItems = {
+        set: JSON.parse(portfolioItems as any).map((id: string) => ({ id })),
+      };
+    }
 
     return this.prisma.product
       .update({
@@ -150,7 +155,7 @@ export class ProductService {
           portfolioItems: true,
         },
       })
-      .then(this.addImageUrls.bind(this));
+      .then(this.addFullUrls.bind(this));
   }
 
   remove(id: string) {
@@ -172,7 +177,7 @@ export class ProductService {
           portfolioItems: true,
         },
       })
-      .then(this.addImageUrls.bind(this));
+      .then(this.addFullUrls.bind(this));
   }
 
   async disconnectPortfolioItem(productId: string, portfolioItemId: string) {
@@ -188,6 +193,6 @@ export class ProductService {
           portfolioItems: true,
         },
       })
-      .then(this.addImageUrls.bind(this));
+      .then(this.addFullUrls.bind(this));
   }
 }

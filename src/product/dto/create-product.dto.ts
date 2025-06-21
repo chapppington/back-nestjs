@@ -91,4 +91,8 @@ export class CreateProductDto {
   @IsArray()
   @IsString({ each: true })
   advantageImages?: string[];
+
+  @IsOptional()
+  @IsString()
+  model_3d_url?: string;
 }

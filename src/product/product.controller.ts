@@ -29,28 +29,38 @@ export class ProductController {
   @Post()
   @Auth(Role.MANAGER)
   @UseInterceptors(
-    FileFieldsInterceptor([{ name: "advantageImages", maxCount: 5 }], {
-      storage: diskStorage({
-        destination: "./uploads/products",
-        filename: (req, file, callback) => {
-          const uniqueSuffix =
-            Date.now() + "-" + Math.round(Math.random() * 1e9);
-          callback(null, `${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
-    })
+    FileFieldsInterceptor(
+      [
+        { name: "advantageImages", maxCount: 5 },
+        { name: "model_3d", maxCount: 1 },
+      ],
+      {
+        storage: diskStorage({
+          destination: "./uploads/products",
+          filename: (req, file, callback) => {
+            const uniqueSuffix =
+              Date.now() + "-" + Math.round(Math.random() * 1e9);
+            callback(null, `${uniqueSuffix}${extname(file.originalname)}`);
+          },
+        }),
+      }
+    )
   )
   create(
     @Body() createProductDto: CreateProductDto,
     @UploadedFiles()
     files?: {
       advantageImages?: Express.Multer.File[];
+      model_3d?: Express.Multer.File[];
     }
   ) {
     if (files?.advantageImages?.length) {
       createProductDto.advantageImages = files.advantageImages.map(
         (file) => file.filename
       );
+    }
+    if (files?.model_3d?.length) {
+      createProductDto.model_3d_url = files.model_3d[0].filename;
     }
 
     return this.productService.create(createProductDto);
@@ -86,16 +96,22 @@ export class ProductController {
   @Patch(":id")
   @Auth(Role.MANAGER)
   @UseInterceptors(
-    FileFieldsInterceptor([{ name: "advantageImages", maxCount: 5 }], {
-      storage: diskStorage({
-        destination: "./uploads/products",
-        filename: (req, file, callback) => {
-          const uniqueSuffix =
-            Date.now() + "-" + Math.round(Math.random() * 1e9);
-          callback(null, `${uniqueSuffix}${extname(file.originalname)}`);
-        },
-      }),
-    })
+    FileFieldsInterceptor(
+      [
+        { name: "advantageImages", maxCount: 5 },
+        { name: "model_3d", maxCount: 1 },
+      ],
+      {
+        storage: diskStorage({
+          destination: "./uploads/products",
+          filename: (req, file, callback) => {
+            const uniqueSuffix =
+              Date.now() + "-" + Math.round(Math.random() * 1e9);
+            callback(null, `${uniqueSuffix}${extname(file.originalname)}`);
+          },
+        }),
+      }
+    )
   )
   update(
     @Param("id") id: string,
@@ -103,12 +119,16 @@ export class ProductController {
     @UploadedFiles()
     files?: {
       advantageImages?: Express.Multer.File[];
+      model_3d?: Express.Multer.File[];
     }
   ) {
     if (files?.advantageImages?.length) {
       updateProductDto.advantageImages = files.advantageImages.map(
         (file) => file.filename
       );
+    }
+    if (files?.model_3d?.length) {
+      updateProductDto.model_3d_url = files.model_3d[0].filename;
     }
 
     return this.productService.update(id, updateProductDto);
