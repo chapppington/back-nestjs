@@ -31,6 +31,7 @@ export class ProductController {
   @UseInterceptors(
     FileFieldsInterceptor(
       [
+        { name: "previewImage", maxCount: 1 },
         { name: "advantageImages", maxCount: 5 },
         { name: "model_3d", maxCount: 1 },
       ],
@@ -50,10 +51,14 @@ export class ProductController {
     @Body() createProductDto: CreateProductDto,
     @UploadedFiles()
     files?: {
+      previewImage?: Express.Multer.File[];
       advantageImages?: Express.Multer.File[];
       model_3d?: Express.Multer.File[];
     }
   ) {
+    if (files?.previewImage?.length) {
+      createProductDto.previewImage = files.previewImage[0].filename;
+    }
     if (files?.advantageImages?.length) {
       createProductDto.advantageImages = files.advantageImages.map(
         (file) => file.filename
@@ -98,6 +103,7 @@ export class ProductController {
   @UseInterceptors(
     FileFieldsInterceptor(
       [
+        { name: "previewImage", maxCount: 1 },
         { name: "advantageImages", maxCount: 5 },
         { name: "model_3d", maxCount: 1 },
       ],
@@ -118,10 +124,14 @@ export class ProductController {
     @Body() updateProductDto: UpdateProductDto,
     @UploadedFiles()
     files?: {
+      previewImage?: Express.Multer.File[];
       advantageImages?: Express.Multer.File[];
       model_3d?: Express.Multer.File[];
     }
   ) {
+    if (files?.previewImage?.length) {
+      updateProductDto.previewImage = files.previewImage[0].filename;
+    }
     if (files?.advantageImages?.length) {
       updateProductDto.advantageImages = files.advantageImages.map(
         (file) => file.filename

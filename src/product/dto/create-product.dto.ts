@@ -67,6 +67,10 @@ export class CreateProductDto {
   @IsNotEmpty()
   description: string;
 
+  @IsString()
+  @IsOptional()
+  previewImage?: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ImportantCharacteristicDto)

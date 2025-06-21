@@ -8,6 +8,9 @@ export class ProductService {
   constructor(private prisma: PrismaService) {}
 
   private addFullUrls(product: any) {
+    if (product.previewImage) {
+      product.previewImageUrl = `/uploads/products/${product.previewImage}`;
+    }
     if (product.advantageImages && product.advantageImages.length > 0) {
       product.advantageImageUrls = product.advantageImages.map(
         (image: string) => `/uploads/products/${image}`

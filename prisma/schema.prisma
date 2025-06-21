@@ -123,6 +123,7 @@ model Product {
   category    String
   name        String
   description String
+  previewImage String?  @map("preview_image") // Опциональное поле для превью изображения
   importantCharacteristics Json @map("important_characteristics") // JSON массив с характеристиками
   advantages  Json // JSON массив с преимуществами (от 3 до 5)
   simpleDescription Json @map("simple_description") // JSON с простым описанием
