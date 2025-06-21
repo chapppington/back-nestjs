@@ -7,6 +7,7 @@ import { NewsModule } from "./news/news.module";
 import { PortfolioModule } from "./portfolio/portfolio.module";
 import { VacancyModule } from "./vacancy/vacancy.module";
 import { SiteSeoSettingsModule } from "./site-seo-settings/site-seo-settings.module";
+import { ProductModule } from "./product/product.module";
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { SiteSeoSettingsModule } from "./site-seo-settings/site-seo-settings.mod
     PortfolioModule,
     VacancyModule,
     SiteSeoSettingsModule,
+    ProductModule,
   ],
 })
 export class AppModule {}

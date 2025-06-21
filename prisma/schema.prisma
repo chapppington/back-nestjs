@@ -76,6 +76,9 @@ model PortfolioItem {
   reviewImage  String? @map("review_image")
   reviewRole   String? @map("review_role")
 
+  // Связь с товарами
+  products Product[] @relation("ProductPortfolioItems")
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -113,4 +116,23 @@ model SiteSeoSettings {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("site_seo_settings")
+}
+
+model Product {
+  id          String   @id @default(cuid())
+  category    String
+  name        String
+  description String
+  importantCharacteristics Json @map("important_characteristics") // JSON массив с характеристиками
+  advantages  Json // JSON массив с преимуществами (от 3 до 5)
+  simpleDescription Json @map("simple_description") // JSON с простым описанием
+  detailedDescription Json @map("detailed_description") // JSON с детальным описанием
+  
+  // Связь с кейсами применения (PortfolioItem)
+  portfolioItems PortfolioItem[] @relation("ProductPortfolioItems")
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("products")
 }
