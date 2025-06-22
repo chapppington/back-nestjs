@@ -12,11 +12,6 @@ export class ProductService {
     if (product.previewImage) {
       product.previewImageUrl = `/uploads/products/${product.previewImage}`;
     }
-    if (product.advantageImages && product.advantageImages.length > 0) {
-      product.advantageImageUrls = product.advantageImages.map(
-        (image: string) => `/uploads/products/${image}`
-      );
-    }
     if (product.model_3d_url) {
       product.model_3d_url = `/uploads/products/${product.model_3d_url}`;
     }
@@ -41,7 +36,6 @@ export class ProductService {
           detailedDescription: JSON.parse(
             createProductDto.detailedDescription as any
           ),
-          advantageImages: createProductDto.advantageImages || [],
           portfolioItems: {
             connect: JSON.parse(portfolioItems || "[]").map((id: string) => ({
               id,

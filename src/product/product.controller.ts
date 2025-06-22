@@ -32,7 +32,11 @@ export class ProductController {
     FileFieldsInterceptor(
       [
         { name: "previewImage", maxCount: 1 },
-        { name: "advantageImages", maxCount: 5 },
+        { name: "advantageImages_0", maxCount: 1 },
+        { name: "advantageImages_1", maxCount: 1 },
+        { name: "advantageImages_2", maxCount: 1 },
+        { name: "advantageImages_3", maxCount: 1 },
+        { name: "advantageImages_4", maxCount: 1 },
         { name: "model_3d", maxCount: 1 },
       ],
       {
@@ -52,21 +56,35 @@ export class ProductController {
     @UploadedFiles()
     files?: {
       previewImage?: Express.Multer.File[];
-      advantageImages?: Express.Multer.File[];
+      advantageImages_0?: Express.Multer.File[];
+      advantageImages_1?: Express.Multer.File[];
+      advantageImages_2?: Express.Multer.File[];
+      advantageImages_3?: Express.Multer.File[];
+      advantageImages_4?: Express.Multer.File[];
       model_3d?: Express.Multer.File[];
     }
   ) {
     if (files?.previewImage?.length) {
       createProductDto.previewImage = files.previewImage[0].filename;
     }
-    if (files?.advantageImages?.length) {
-      createProductDto.advantageImages = files.advantageImages.map(
-        (file) => file.filename
-      );
-    }
     if (files?.model_3d?.length) {
       createProductDto.model_3d_url = files.model_3d[0].filename;
     }
+
+    // Обрабатываем файлы изображений преимуществ по индексам
+    const advantages = JSON.parse(createProductDto.advantages);
+
+    for (let i = 0; i < 5; i++) {
+      const fileKey = `advantageImages_${i}` as keyof typeof files;
+      if (files?.[fileKey]?.length) {
+        const file = files[fileKey]![0];
+        if (advantages[i]) {
+          advantages[i].image = file.filename;
+        }
+      }
+    }
+
+    createProductDto.advantages = JSON.stringify(advantages);
 
     return this.productService.create(createProductDto);
   }
@@ -109,7 +127,11 @@ export class ProductController {
     FileFieldsInterceptor(
       [
         { name: "previewImage", maxCount: 1 },
-        { name: "advantageImages", maxCount: 5 },
+        { name: "advantageImages_0", maxCount: 1 },
+        { name: "advantageImages_1", maxCount: 1 },
+        { name: "advantageImages_2", maxCount: 1 },
+        { name: "advantageImages_3", maxCount: 1 },
+        { name: "advantageImages_4", maxCount: 1 },
         { name: "model_3d", maxCount: 1 },
       ],
       {
@@ -130,21 +152,35 @@ export class ProductController {
     @UploadedFiles()
     files?: {
       previewImage?: Express.Multer.File[];
-      advantageImages?: Express.Multer.File[];
+      advantageImages_0?: Express.Multer.File[];
+      advantageImages_1?: Express.Multer.File[];
+      advantageImages_2?: Express.Multer.File[];
+      advantageImages_3?: Express.Multer.File[];
+      advantageImages_4?: Express.Multer.File[];
       model_3d?: Express.Multer.File[];
     }
   ) {
     if (files?.previewImage?.length) {
       updateProductDto.previewImage = files.previewImage[0].filename;
     }
-    if (files?.advantageImages?.length) {
-      updateProductDto.advantageImages = files.advantageImages.map(
-        (file) => file.filename
-      );
-    }
     if (files?.model_3d?.length) {
       updateProductDto.model_3d_url = files.model_3d[0].filename;
     }
+
+    // Обрабатываем файлы изображений преимуществ по индексам
+    const advantages = JSON.parse(updateProductDto.advantages as any);
+
+    for (let i = 0; i < 5; i++) {
+      const fileKey = `advantageImages_${i}` as keyof typeof files;
+      if (files?.[fileKey]?.length) {
+        const file = files[fileKey]![0];
+        if (advantages[i]) {
+          advantages[i].image = file.filename;
+        }
+      }
+    }
+
+    updateProductDto.advantages = JSON.stringify(advantages);
 
     return this.productService.update(id, updateProductDto);
   }

@@ -30,8 +30,8 @@ export class AdvantageDto {
   icon: string;
 
   @IsString()
-  @IsNotEmpty()
-  image: string;
+  @IsOptional()
+  image?: string;
 
   @IsString()
   @IsNotEmpty()
@@ -80,10 +80,8 @@ export class CreateProductDto {
   @Type(() => ImportantCharacteristicDto)
   importantCharacteristics: ImportantCharacteristicDto[];
 
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => AdvantageDto)
-  advantages: AdvantageDto[];
+  @IsString()
+  advantages: string;
 
   @IsArray()
   @ValidateNested({ each: true })
@@ -94,11 +92,6 @@ export class CreateProductDto {
   @ValidateNested({ each: true })
   @Type(() => DetailedDescriptionItemDto)
   detailedDescription: { items: DetailedDescriptionItemDto[] };
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  advantageImages?: string[];
 
   @IsOptional()
   @IsString()
