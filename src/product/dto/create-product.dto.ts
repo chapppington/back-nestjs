@@ -64,6 +64,10 @@ export class CreateProductDto {
   name: string;
 
   @IsString()
+  @IsOptional()
+  slug?: string;
+
+  @IsString()
   @IsNotEmpty()
   description: string;
 

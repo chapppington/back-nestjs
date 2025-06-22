@@ -98,6 +98,11 @@ export class ProductController {
     return this.productService.findOne(id);
   }
 
+  @Get("slug/:slug")
+  findBySlug(@Param("slug") slug: string) {
+    return this.productService.findBySlug(slug);
+  }
+
   @Patch(":id")
   @Auth(Role.MANAGER)
   @UseInterceptors(

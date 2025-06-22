@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma.service";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
+import { generateSlug } from "src/utils/transliteration";
 
 @Injectable()
 export class ProductService {
@@ -29,6 +30,7 @@ export class ProductService {
       .create({
         data: {
           ...restDto,
+          slug: createProductDto.slug || generateSlug(createProductDto.name),
           importantCharacteristics: JSON.parse(
             createProductDto.importantCharacteristics as any
           ),
@@ -111,6 +113,17 @@ export class ProductService {
       .then(this.addFullUrls.bind(this));
   }
 
+  findBySlug(slug: string) {
+    return this.prisma.product
+      .findUnique({
+        where: { slug },
+        include: {
+          portfolioItems: true,
+        },
+      })
+      .then(this.addFullUrls.bind(this));
+  }
+
   findByCategory(category: string) {
     return this.prisma.product
       .findMany({
@@ -128,6 +141,10 @@ export class ProductService {
   update(id: string, updateProductDto: UpdateProductDto) {
     const { portfolioItems, ...restDto } = updateProductDto as any;
     const updateData: any = { ...restDto };
+
+    if (updateProductDto.name) {
+      updateData.slug = generateSlug(updateProductDto.name);
+    }
 
     if (updateProductDto.importantCharacteristics)
       updateData.importantCharacteristics = JSON.parse(

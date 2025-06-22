@@ -122,6 +122,7 @@ model Product {
   id          String   @id @default(cuid())
   category    String
   name        String
+  slug        String   @unique
   description String
   previewImage String?  @map("preview_image") // Опциональное поле для превью изображения
   importantCharacteristics Json @map("important_characteristics") // JSON массив с характеристиками
