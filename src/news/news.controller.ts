@@ -108,4 +108,9 @@ export class NewsController {
   remove(@Param("id") id: string) {
     return this.newsService.remove(id);
   }
+
+  @Get("slug/:slug")
+  findBySlug(@Param("slug") slug: string) {
+    return this.newsService.findBySlug(slug);
+  }
 }

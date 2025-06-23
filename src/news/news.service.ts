@@ -77,4 +77,12 @@ export class NewsService {
       where: { id },
     });
   }
+
+  async findBySlug(slug: string) {
+    return this.prisma.news
+      .findUnique({
+        where: { slug },
+      })
+      .then(this.addImageUrl.bind(this));
+  }
 }
