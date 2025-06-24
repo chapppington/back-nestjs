@@ -28,6 +28,7 @@ async function bootstrap() {
     origin: [
       "http://localhost:3000",
       "https://e61b-106-249-226-194.ngrok-free.app",
+      "https://testsk2.ru",
     ],
     credentials: true,
     exposedHeaders: "set-cookie",
