@@ -8,6 +8,7 @@ import { PortfolioModule } from "./portfolio/portfolio.module";
 import { VacancyModule } from "./vacancy/vacancy.module";
 import { SiteSeoSettingsModule } from "./site-seo-settings/site-seo-settings.module";
 import { ProductModule } from "./product/product.module";
+import { SiteConfigModule } from "./site-config/site-config.module";
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { ProductModule } from "./product/product.module";
     VacancyModule,
     SiteSeoSettingsModule,
     ProductModule,
+    SiteConfigModule,
   ],
 })
 export class AppModule {}

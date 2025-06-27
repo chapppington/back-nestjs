@@ -141,3 +141,12 @@ model Product {
 
   @@map("products")
 }
+
+model SiteConfig {
+  id         String   @id @default(cuid())
+  fontFamily String
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("site_config")
+}
