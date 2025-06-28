@@ -17,6 +17,10 @@ export class CreateNewsDto {
   @IsOptional()
   image?: string;
 
+  @IsString()
+  @IsOptional()
+  alt?: string;
+
   @IsNumber()
   @IsOptional()
   readingTime?: number;
