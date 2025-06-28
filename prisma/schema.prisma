@@ -43,6 +43,7 @@ model News {
   content   String
   shortContent String? @map("short_content")
   image     String?
+  alt       String?  // Alt text for SEO
   readingTime Int    @default(0) @map("reading_time")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
