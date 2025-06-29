@@ -2,6 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { PrismaService } from "src/prisma.service";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
+import { ImportProductDto } from "./dto/import-product.dto";
 import { generateSlug } from "src/utils/transliteration";
 
 @Injectable()
@@ -208,5 +209,153 @@ export class ProductService {
         },
       })
       .then(this.addFullUrls.bind(this));
+  }
+
+  async importFromExcel(products: ImportProductDto[]) {
+    const createdProducts = [];
+    const updatedProducts = [];
+    const errors = [];
+
+    for (const productDto of products) {
+      try {
+        // Исключаем portfolioItems из импорта, чтобы не сбрасывать привязанные проекты
+        const { portfolioItems, ...restDto } = productDto as any;
+
+        // Проверяем, существует ли товар с таким названием
+        const existingProduct = await this.prisma.product.findFirst({
+          where: { name: productDto.name },
+        });
+
+        if (existingProduct) {
+          // Обновляем существующий товар, НЕ трогая portfolioItems и иконки
+          const { portfolioItems, ...updateData } = restDto;
+
+          if (productDto.name) {
+            updateData.slug = generateSlug(productDto.name);
+          }
+
+          console.log(`Updating product: ${productDto.name}`);
+          console.log(`Update data keys:`, Object.keys(updateData));
+          console.log(`PortfolioItems excluded:`, !!portfolioItems);
+
+          // Явно исключаем portfolioItems из данных обновления
+          const { portfolioItems: _, ...cleanUpdateData } = updateData;
+
+          // Сохраняем существующие иконки из преимуществ
+          let existingAdvantages: any[] = [];
+          if (existingProduct.advantages) {
+            if (typeof existingProduct.advantages === "string") {
+              existingAdvantages = JSON.parse(existingProduct.advantages);
+            } else if (Array.isArray(existingProduct.advantages)) {
+              existingAdvantages = existingProduct.advantages;
+            }
+          }
+
+          console.log(
+            `Existing advantages for ${productDto.name}:`,
+            existingAdvantages.map((adv: any) => ({
+              label: adv.label,
+              icon: adv.icon,
+            }))
+          );
+
+          // Обновляем преимущества, сохраняя существующие иконки
+          const updatedAdvantages = productDto.advantages.map(
+            (newAdvantage, index) => {
+              const existingAdvantage = existingAdvantages[index];
+              const preservedIcon =
+                newAdvantage.icon && newAdvantage.icon.trim() !== ""
+                  ? newAdvantage.icon
+                  : existingAdvantage?.icon || "";
+              const preservedImage =
+                newAdvantage.image && newAdvantage.image.trim() !== ""
+                  ? newAdvantage.image
+                  : existingAdvantage?.image || "";
+
+              console.log(`Advantage ${index + 1} "${newAdvantage.label}":`, {
+                newIcon: newAdvantage.icon,
+                existingIcon: existingAdvantage?.icon,
+                preservedIcon,
+                newImage: newAdvantage.image,
+                existingImage: existingAdvantage?.image,
+                preservedImage,
+              });
+
+              return {
+                ...newAdvantage,
+                // Сохраняем существующую иконку, если новая не передана или пустая
+                icon: preservedIcon,
+                // Сохраняем существующее изображение, если новое не передано или пустое
+                image: preservedImage,
+              };
+            }
+          );
+
+          const updatedProduct = await this.prisma.product.upsert({
+            where: { id: existingProduct.id },
+            update: {
+              ...cleanUpdateData,
+              importantCharacteristics: productDto.importantCharacteristics,
+              advantages: updatedAdvantages, // Используем обновленные преимущества с сохраненными иконками
+              simpleDescription: productDto.simpleDescription,
+              detailedDescription: productDto.detailedDescription,
+              // НЕ указываем portfolioItems вообще - Prisma оставит существующие связи
+            },
+            create: {
+              ...cleanUpdateData,
+              slug: productDto.slug || generateSlug(productDto.name),
+              importantCharacteristics: productDto.importantCharacteristics,
+              advantages: productDto.advantages,
+              simpleDescription: productDto.simpleDescription,
+              detailedDescription: productDto.detailedDescription,
+            },
+            include: {
+              portfolioItems: true,
+            },
+          });
+
+          console.log(
+            `Updated product portfolioItems count:`,
+            updatedProduct.portfolioItems?.length || 0
+          );
+
+          updatedProducts.push(this.addFullUrls(updatedProduct));
+        } else {
+          // Создаем новый товар БЕЗ привязки к проектам
+          const product = await this.prisma.product.create({
+            data: {
+              ...restDto,
+              slug: productDto.slug || generateSlug(productDto.name),
+              importantCharacteristics: productDto.importantCharacteristics,
+              advantages: productDto.advantages,
+              simpleDescription: productDto.simpleDescription,
+              detailedDescription: productDto.detailedDescription,
+              // НЕ создаем связи с portfolioItems при импорте
+            },
+            include: {
+              portfolioItems: true,
+            },
+          });
+
+          createdProducts.push(this.addFullUrls(product));
+        }
+      } catch (error) {
+        console.error(`Error processing product ${productDto.name}:`, error);
+        errors.push(
+          `Ошибка при обработке товара "${productDto.name}": ${error.message}`
+        );
+      }
+    }
+
+    if (errors.length > 0) {
+      throw new Error(`Ошибки при импорте:\n${errors.join("\n")}`);
+    }
+
+    return {
+      message: `Успешно импортировано ${createdProducts.length} новых товаров и обновлено ${updatedProducts.length} существующих товаров`,
+      products: [...createdProducts, ...updatedProducts],
+      created: createdProducts.length,
+      updated: updatedProducts.length,
+    };
   }
 }

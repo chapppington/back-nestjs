@@ -15,6 +15,7 @@ import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { ProductService } from "./product.service";
 import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
+import { ImportProductsRequestDto } from "./dto/import-product.dto";
 import { Role } from "@prisma/client";
 import { Auth } from "@/auth/decorators/auth.decorator";
 import { diskStorage } from "multer";
@@ -87,6 +88,12 @@ export class ProductController {
     createProductDto.advantages = JSON.stringify(advantages);
 
     return this.productService.create(createProductDto);
+  }
+
+  @Post("import")
+  @Auth(Role.MANAGER)
+  importFromExcel(@Body() body: ImportProductsRequestDto) {
+    return this.productService.importFromExcel(body.products);
   }
 
   @Get()
