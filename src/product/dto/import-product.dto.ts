@@ -76,6 +76,10 @@ export class ImportProductDto {
   @IsOptional()
   previewImage?: string;
 
+  @IsOptional()
+  @IsString()
+  id?: string;
+
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ImportImportantCharacteristicDto)

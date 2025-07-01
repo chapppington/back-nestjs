@@ -221,10 +221,13 @@ export class ProductService {
         // Исключаем portfolioItems из импорта, чтобы не сбрасывать привязанные проекты
         const { portfolioItems, ...restDto } = productDto as any;
 
-        // Проверяем, существует ли товар с таким названием
-        const existingProduct = await this.prisma.product.findFirst({
-          where: { name: productDto.name },
-        });
+        // Если есть id — ищем по id, иначе создаём новый
+        let existingProduct = null;
+        if (productDto.id) {
+          existingProduct = await this.prisma.product.findUnique({
+            where: { id: productDto.id },
+          });
+        }
 
         if (existingProduct) {
           // Обновляем существующий товар, НЕ трогая portfolioItems и иконки
@@ -233,10 +236,6 @@ export class ProductService {
           if (productDto.name) {
             updateData.slug = generateSlug(productDto.name);
           }
-
-          console.log(`Updating product: ${productDto.name}`);
-          console.log(`Update data keys:`, Object.keys(updateData));
-          console.log(`PortfolioItems excluded:`, !!portfolioItems);
 
           // Явно исключаем portfolioItems из данных обновления
           const { portfolioItems: _, ...cleanUpdateData } = updateData;
@@ -251,15 +250,6 @@ export class ProductService {
             }
           }
 
-          console.log(
-            `Existing advantages for ${productDto.name}:`,
-            existingAdvantages.map((adv: any) => ({
-              label: adv.label,
-              icon: adv.icon,
-            }))
-          );
-
-          // Обновляем преимущества, сохраняя существующие иконки
           const updatedAdvantages = productDto.advantages.map(
             (newAdvantage, index) => {
               const existingAdvantage = existingAdvantages[index];
@@ -271,41 +261,20 @@ export class ProductService {
                 newAdvantage.image && newAdvantage.image.trim() !== ""
                   ? newAdvantage.image
                   : existingAdvantage?.image || "";
-
-              console.log(`Advantage ${index + 1} "${newAdvantage.label}":`, {
-                newIcon: newAdvantage.icon,
-                existingIcon: existingAdvantage?.icon,
-                preservedIcon,
-                newImage: newAdvantage.image,
-                existingImage: existingAdvantage?.image,
-                preservedImage,
-              });
-
               return {
                 ...newAdvantage,
-                // Сохраняем существующую иконку, если новая не передана или пустая
                 icon: preservedIcon,
-                // Сохраняем существующее изображение, если новое не передано или пустое
                 image: preservedImage,
               };
             }
           );
 
-          const updatedProduct = await this.prisma.product.upsert({
+          const updatedProduct = await this.prisma.product.update({
             where: { id: existingProduct.id },
-            update: {
+            data: {
               ...cleanUpdateData,
               importantCharacteristics: productDto.importantCharacteristics,
-              advantages: updatedAdvantages, // Используем обновленные преимущества с сохраненными иконками
-              simpleDescription: productDto.simpleDescription,
-              detailedDescription: productDto.detailedDescription,
-              // НЕ указываем portfolioItems вообще - Prisma оставит существующие связи
-            },
-            create: {
-              ...cleanUpdateData,
-              slug: productDto.slug || generateSlug(productDto.name),
-              importantCharacteristics: productDto.importantCharacteristics,
-              advantages: productDto.advantages,
+              advantages: updatedAdvantages,
               simpleDescription: productDto.simpleDescription,
               detailedDescription: productDto.detailedDescription,
             },
@@ -313,11 +282,6 @@ export class ProductService {
               portfolioItems: true,
             },
           });
-
-          console.log(
-            `Updated product portfolioItems count:`,
-            updatedProduct.portfolioItems?.length || 0
-          );
 
           updatedProducts.push(this.addFullUrls(updatedProduct));
         } else {
@@ -330,7 +294,6 @@ export class ProductService {
               advantages: productDto.advantages,
               simpleDescription: productDto.simpleDescription,
               detailedDescription: productDto.detailedDescription,
-              // НЕ создаем связи с portfolioItems при импорте
             },
             include: {
               portfolioItems: true,
