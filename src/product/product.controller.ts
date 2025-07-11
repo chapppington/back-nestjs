@@ -14,7 +14,7 @@ import {
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { ProductService } from "./product.service";
 import { CreateProductDto } from "./dto/create-product.dto";
-import { UpdateProductDto } from "./dto/update-product.dto";
+import { UpdateProductDto, UpdateProductOrderDto } from "./dto/update-product.dto";
 import { ImportProductsRequestDto } from "./dto/import-product.dto";
 import { Role } from "@prisma/client";
 import { Auth } from "@/auth/decorators/auth.decorator";
@@ -128,6 +128,12 @@ export class ProductController {
     return this.productService.findBySlug(slug);
   }
 
+  @Patch("order")
+  @Auth(Role.MANAGER)
+  async updateOrder(@Body() dto: UpdateProductOrderDto[]) {
+    return this.productService.updateOrder(dto);
+  }
+
   @Patch(":id")
   @Auth(Role.MANAGER)
   @UseInterceptors(
@@ -174,20 +180,19 @@ export class ProductController {
       updateProductDto.model_3d_url = files.model_3d[0].filename;
     }
 
-    // Обрабатываем файлы изображений преимуществ по индексам
-    const advantages = JSON.parse(updateProductDto.advantages as any);
-
-    for (let i = 0; i < 5; i++) {
-      const fileKey = `advantageImages_${i}` as keyof typeof files;
-      if (files?.[fileKey]?.length) {
-        const file = files[fileKey]![0];
-        if (advantages[i]) {
-          advantages[i].image = file.filename;
+    if (updateProductDto.advantages !== undefined) {
+      const advantages = JSON.parse(updateProductDto.advantages as any);
+      for (let i = 0; i < 5; i++) {
+        const fileKey = `advantageImages_${i}` as keyof typeof files;
+        if (files?.[fileKey]?.length) {
+          const file = files[fileKey]![0];
+          if (advantages[i]) {
+            advantages[i].image = file.filename;
+          }
         }
       }
+      updateProductDto.advantages = JSON.stringify(advantages);
     }
-
-    updateProductDto.advantages = JSON.stringify(advantages);
 
     return this.productService.update(id, updateProductDto);
   }

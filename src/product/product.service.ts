@@ -4,6 +4,7 @@ import { CreateProductDto } from "./dto/create-product.dto";
 import { UpdateProductDto } from "./dto/update-product.dto";
 import { ImportProductDto } from "./dto/import-product.dto";
 import { generateSlug } from "src/utils/transliteration";
+import { UpdateProductOrderDto } from "./dto/update-product.dto";
 
 @Injectable()
 export class ProductService {
@@ -320,5 +321,18 @@ export class ProductService {
       created: createdProducts.length,
       updated: updatedProducts.length,
     };
+  }
+
+  async updateOrder(dto: UpdateProductOrderDto[]) {
+    // Обновляем порядок товаров в транзакции
+    await this.prisma.$transaction(
+      dto.map(item =>
+        this.prisma.product.update({
+          where: { id: item.id },
+          data: { order: item.order },
+        })
+      )
+    );
+    return { success: true };
   }
 }
