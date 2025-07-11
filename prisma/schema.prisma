@@ -131,6 +131,7 @@ model Product {
   simpleDescription Json @map("simple_description") // JSON с простым описанием
   detailedDescription Json @map("detailed_description") // JSON с детальным описанием
   
+  order Int @default(0) // Порядок отображения
   // Поля для 3D модели
   model_3d_url    String?  @map("model_3d_url") // Путь к 3D модели
   
