@@ -126,6 +126,7 @@ model Product {
   slug        String   @unique
   description String
   previewImage String?  @map("preview_image") // Опциональное поле для превью изображения
+  previewImageAlt String? @map("preview_image_alt") // Alt описание для превью изображения
   importantCharacteristics Json @map("important_characteristics") // JSON массив с характеристиками
   advantages  Json // JSON массив с преимуществами (от 3 до 5)
   simpleDescription Json @map("simple_description") // JSON с простым описанием

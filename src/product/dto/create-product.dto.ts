@@ -34,6 +34,10 @@ export class AdvantageDto {
   image?: string;
 
   @IsString()
+  @IsOptional()
+  alt?: string;
+
+  @IsString()
   @IsNotEmpty()
   description: string;
 }
@@ -74,6 +78,10 @@ export class CreateProductDto {
   @IsString()
   @IsOptional()
   previewImage?: string;
+
+  @IsString()
+  @IsOptional()
+  previewImageAlt?: string;
 
   @IsArray()
   @ValidateNested({ each: true })
