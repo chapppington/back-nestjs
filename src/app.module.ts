@@ -9,6 +9,7 @@ import { VacancyModule } from "./vacancy/vacancy.module";
 import { SiteSeoSettingsModule } from "./site-seo-settings/site-seo-settings.module";
 import { ProductModule } from "./product/product.module";
 import { SiteConfigModule } from "./site-config/site-config.module";
+import { NavbarConfigModule } from "./navbar-config/navbar-config.module";
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { SiteConfigModule } from "./site-config/site-config.module";
     SiteSeoSettingsModule,
     ProductModule,
     SiteConfigModule,
+    NavbarConfigModule,
   ],
 })
 export class AppModule {}
