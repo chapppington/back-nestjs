@@ -153,3 +153,16 @@ model SiteConfig {
 
   @@map("site_config")
 }
+
+model NavbarConfig {
+  id                    String   @id @default(cuid())
+  desktopNavbarConfig   Json     @map("desktop_navbar_config") // { 'links_shown': [], 'links_in_hidden_menu': [] }
+  navbarEmail           String?  @map("navbar_email")
+  navbarPhone           String?  @map("navbar_phone")
+  navbarCtaButtonText   String?  @map("navbar_cta_button_text")
+  
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("navbar_config")
+}
