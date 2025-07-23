@@ -31,5 +31,9 @@ export class UpdateNewsDto extends PartialType(CreateNewsDto) {
   @IsOptional()
   shortContent?: string;
 
+  @IsString()
+  @IsOptional()
+  date?: string;
+
   slug?: string;
 }

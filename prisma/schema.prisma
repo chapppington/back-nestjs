@@ -45,6 +45,7 @@ model News {
   image     String?
   alt       String?  // Alt text for SEO
   readingTime Int    @default(0) @map("reading_time")
+  date      DateTime? @map("date") // Custom display date for news
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

@@ -32,4 +32,8 @@ export class CreateNewsDto {
   @IsString()
   @IsOptional()
   shortContent?: string;
+
+  @IsString()
+  @IsOptional()
+  date?: string;
 }
