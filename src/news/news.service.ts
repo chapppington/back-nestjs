@@ -27,12 +27,19 @@ export class NewsService {
     const readingTime = this.calculateReadingTime(createNewsDto.content);
     const slug = generateSlug(createNewsDto.title);
 
+    // Parse date if provided
+    let date: Date | undefined = undefined;
+    if (createNewsDto.date) {
+      date = new Date(createNewsDto.date);
+    }
+
     return this.prisma.news
       .create({
         data: {
           ...createNewsDto,
           readingTime,
           slug,
+          date,
         },
       })
       .then(this.addImageUrl.bind(this));
@@ -62,6 +69,10 @@ export class NewsService {
     }
     if (updateNewsDto.title) {
       data.slug = generateSlug(updateNewsDto.title);
+    }
+    // Parse date if provided
+    if (updateNewsDto.date) {
+      data.date = new Date(updateNewsDto.date).toISOString();
     }
 
     return this.prisma.news
