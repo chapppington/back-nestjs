@@ -10,6 +10,7 @@ import { SiteSeoSettingsModule } from "./site-seo-settings/site-seo-settings.mod
 import { ProductModule } from "./product/product.module";
 import { SiteConfigModule } from "./site-config/site-config.module";
 import { NavbarConfigModule } from "./navbar-config/navbar-config.module";
+import { FooterConfigModule } from "./footer-config/footer-config.module";
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { NavbarConfigModule } from "./navbar-config/navbar-config.module";
     ProductModule,
     SiteConfigModule,
     NavbarConfigModule,
+    FooterConfigModule,
   ],
 })
 export class AppModule {}
