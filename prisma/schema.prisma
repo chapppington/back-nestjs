@@ -179,3 +179,17 @@ model FooterConfig {
 
   @@map("footer_config")
 }
+
+model HomePageConfig {
+  id                    String   @id @default(cuid())
+  firstScreen           Json     @map("first_screen") // { title, subtitle, main_button_text, stats }
+  rotatingText          String   @map("rotating_text")
+  missionScreen         Json     @map("mission_screen") // { mission_title, mission_text }
+  productsScreen        Json     @map("products_screen") // { button_text, products }
+  reviewsScreen         Json     @map("reviews_screen") // { title, subtitle, reviews }
+  
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("home_page_config")
+}

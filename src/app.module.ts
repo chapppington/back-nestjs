@@ -11,6 +11,7 @@ import { ProductModule } from "./product/product.module";
 import { SiteConfigModule } from "./site-config/site-config.module";
 import { NavbarConfigModule } from "./navbar-config/navbar-config.module";
 import { FooterConfigModule } from "./footer-config/footer-config.module";
+import { HomePageConfigModule } from "./home-page-config/home-page-config.module";
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { FooterConfigModule } from "./footer-config/footer-config.module";
     SiteConfigModule,
     NavbarConfigModule,
     FooterConfigModule,
+    HomePageConfigModule,
   ],
 })
 export class AppModule {}
