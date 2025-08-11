@@ -193,3 +193,16 @@ model HomePageConfig {
 
   @@map("home_page_config")
 }
+
+model ProductionPageConfig {
+  id                    String   @id @default(cuid())
+  firstScreen           Json     @map("first_screen") // { bg_image, title, subtitle, button_text, button_href, stats }
+  secondScreen          Json     @map("second_screen") // { title, subtitle, stages }
+  thirdScreen           Json     @map("third_screen") // { title, subtitle, equipment }
+  fourthScreen          Json     @map("fourth_screen") // { items }
+  
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  @@map("production_page_config")
+}
