@@ -12,6 +12,7 @@ import { SiteConfigModule } from "./site-config/site-config.module";
 import { NavbarConfigModule } from "./navbar-config/navbar-config.module";
 import { FooterConfigModule } from "./footer-config/footer-config.module";
 import { HomePageConfigModule } from "./home-page-config/home-page-config.module";
+import { ProductionPageConfigModule } from "./production-page-config/production-page-config.module";
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { HomePageConfigModule } from "./home-page-config/home-page-config.module
     NavbarConfigModule,
     FooterConfigModule,
     HomePageConfigModule,
+    ProductionPageConfigModule,
   ],
 })
 export class AppModule {}
