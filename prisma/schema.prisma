@@ -206,3 +206,18 @@ model ProductionPageConfig {
 
   @@map("production_page_config")
 }
+
+model VacanciesPageConfig {
+  id            String   @id @default(cuid())
+  firstScreen   Json     @map("first_screen")   // { bg_image, title, subtitle, stats: [{ value, description, showOnMobile }] }
+  secondScreen  Json     @map("second_screen")  // { title, subtitle }
+  thirdScreen   Json     @map("third_screen")   // { title, subtitle, values: [{ title, subtitle, icon_path }] }
+  fourthScreen  Json     @map("fourth_screen")  // { title, subtitle, subtitle_icon, advantages: [{ icon, text }] }
+  fifthScreen   Json     @map("fifth_screen")   // { title, subtitle, reviews: [{ name, position, image, text, shortText }] }
+  sixthScreen   Json     @map("sixth_screen")   // { title, subtitle, answers: [{ title, content, list? }] }
+
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("vacancies_page_config")
+}
