@@ -221,3 +221,13 @@ model VacanciesPageConfig {
 
   @@map("vacancies_page_config")
 }
+
+model CertificatesPageConfig {
+  id        String   @id @default(cuid())
+  tabs      Json     @map("tabs") // [{ name, items: [{ id, title, content, order, documents: [{ title, link }] }] }]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("certificates_page_config")
+}
