@@ -231,3 +231,14 @@ model CertificatesPageConfig {
 
   @@map("certificates_page_config")
 }
+
+model ContactsPageConfig {
+  id          String   @id @default(cuid())
+  departments Json     @map("departments") // Array of { name: string, phone: string, email: string }
+  address     String   @map("address")
+
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("contacts_page_config")
+}
