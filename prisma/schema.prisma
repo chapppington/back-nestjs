@@ -242,3 +242,37 @@ model ContactsPageConfig {
 
   @@map("contacts_page_config")
 }
+
+/// Тип формы, из которой пришла заявка
+enum FormType {
+  REQUEST        // Общая заявка с сайта (navbar popup и т.п.)
+  VACANCY        // Форма вакансии
+  QUESTIONNAIRE  // Анкета/опросник
+  DEFAULT        // Прочие формы
+}
+
+/// Заявки/обращения с сайта
+model FormSubmission {
+  id        String   @id @default(cuid())
+
+  formType  FormType @map("form_type")
+
+  name      String
+  email     String?
+  phone     String?
+  comments  String?
+
+  // Пути к загруженным файлам (резюме и т. п.)
+  files     String[] @default([]) @map("files")
+
+  // Флаг согласия на обработку персональных данных
+  consent   Boolean  @default(false)
+
+  // Произвольные доп. данные из конкретной формы
+  meta      Json?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("form_submissions")
+}
