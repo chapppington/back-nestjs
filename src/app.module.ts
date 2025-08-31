@@ -16,6 +16,7 @@ import { ProductionPageConfigModule } from "./production-page-config/production-
 import { VacanciesPageConfigModule } from "./vacancies-page-config/vacancies-page-config.module";
 import { CertificatesPageConfigModule } from "./certificates-page-config/certificates-page-config.module";
 import { ContactsPageConfigModule } from "./contacts-page-config/contacts-page-config.module";
+import { SubmissionsModule } from "./submissions/submissions.module";
 
 @Module({
   imports: [
@@ -37,6 +38,7 @@ import { ContactsPageConfigModule } from "./contacts-page-config/contacts-page-c
     VacanciesPageConfigModule,
     CertificatesPageConfigModule,
     ContactsPageConfigModule,
+    SubmissionsModule,
   ],
 })
 export class AppModule {}
