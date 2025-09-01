@@ -17,9 +17,17 @@ export class SubmissionsService {
   }
 
   create(createSubmissionDto: CreateSubmissionDto) {
+    // Преобразуем consent из строки в булево значение
+    const data = {
+      ...createSubmissionDto,
+      consent:
+        (createSubmissionDto.consent as any) === "true" ||
+        createSubmissionDto.consent === true,
+    };
+
     return this.prisma.formSubmission
       .create({
-        data: createSubmissionDto,
+        data,
       })
       .then(this.addFileUrls.bind(this));
   }
@@ -42,10 +50,16 @@ export class SubmissionsService {
   }
 
   update(id: string, updateSubmissionDto: UpdateSubmissionDto) {
+    // Преобразуем consent из строки в булево значение, если он присутствует
+    const data = { ...updateSubmissionDto };
+    if (data.consent !== undefined) {
+      data.consent = (data.consent as any) === "true" || data.consent === true;
+    }
+
     return this.prisma.formSubmission
       .update({
         where: { id },
-        data: updateSubmissionDto,
+        data,
       })
       .then(this.addFileUrls.bind(this));
   }
