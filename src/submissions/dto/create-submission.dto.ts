@@ -37,10 +37,20 @@ export class CreateSubmissionDto {
 
   @IsBoolean()
   @Transform(({ value }) => {
-    if (typeof value === "string") {
-      return value === "true";
+    if (typeof value === "boolean") {
+      return value;
     }
-    return value;
+    if (typeof value === "string") {
+      try {
+        // Пытаемся распарсить JSON
+        const parsed = JSON.parse(value);
+        return Boolean(parsed);
+      } catch {
+        // Если не JSON, проверяем как строку
+        return value.toLowerCase() === "true";
+      }
+    }
+    return false;
   })
   consent: boolean;
 
