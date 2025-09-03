@@ -88,5 +88,21 @@ export class UpdatePortfolioItemDto extends PartialType(
   @IsOptional()
   description?: string;
 
+  // Флаги для удаления файлов
+  @IsOptional()
+  clearPoster?: boolean;
+
+  @IsOptional()
+  clearReviewImage?: boolean;
+
+  @IsOptional()
+  clearPreviewVideo?: boolean;
+
+  @IsOptional()
+  clearFullVideo?: boolean;
+
+  @IsOptional()
+  clearSolutionImageIndex?: number[];
+
   slug?: string;
 }

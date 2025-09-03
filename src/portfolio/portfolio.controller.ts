@@ -145,6 +145,24 @@ export class PortfolioController {
         updatePortfolioItemDto.hasReview === "true";
     }
 
+    // Convert clear flags from string to boolean if they exist
+    if (typeof updatePortfolioItemDto.clearPoster === "string") {
+      updatePortfolioItemDto.clearPoster =
+        updatePortfolioItemDto.clearPoster === "true";
+    }
+    if (typeof updatePortfolioItemDto.clearReviewImage === "string") {
+      updatePortfolioItemDto.clearReviewImage =
+        updatePortfolioItemDto.clearReviewImage === "true";
+    }
+    if (typeof updatePortfolioItemDto.clearPreviewVideo === "string") {
+      updatePortfolioItemDto.clearPreviewVideo =
+        updatePortfolioItemDto.clearPreviewVideo === "true";
+    }
+    if (typeof updatePortfolioItemDto.clearFullVideo === "string") {
+      updatePortfolioItemDto.clearFullVideo =
+        updatePortfolioItemDto.clearFullVideo === "true";
+    }
+
     if (files) {
       if (files.poster?.[0]) {
         updatePortfolioItemDto.poster = files.poster[0].filename;

@@ -68,7 +68,7 @@ export class PortfolioService {
   }
 
   update(id: string, updatePortfolioItemDto: UpdatePortfolioItemDto) {
-    const data = {
+    const data: any = {
       ...updatePortfolioItemDto,
       year: updatePortfolioItemDto.year
         ? parseInt(updatePortfolioItemDto.year.toString())
@@ -78,6 +78,52 @@ export class PortfolioService {
     if (updatePortfolioItemDto.name) {
       data.slug = generateSlug(updatePortfolioItemDto.name);
     }
+
+    // Обработка флагов удаления
+    if (updatePortfolioItemDto.clearPoster) {
+      data.poster = null;
+    }
+    if (updatePortfolioItemDto.clearReviewImage) {
+      data.reviewImage = null;
+    }
+    if (updatePortfolioItemDto.clearPreviewVideo) {
+      data.previewVideoPath = null;
+    }
+    if (updatePortfolioItemDto.clearFullVideo) {
+      data.fullVideoPath = null;
+    }
+    if (
+      updatePortfolioItemDto.clearSolutionImageIndex &&
+      updatePortfolioItemDto.clearSolutionImageIndex.length > 0
+    ) {
+      // Получаем текущие solutionImages и удаляем указанные индексы
+      return this.prisma.portfolioItem
+        .findUnique({ where: { id } })
+        .then((item) => {
+          if (!item) return null;
+
+          const currentImages = item.solutionImages || [];
+          const newImages = currentImages.filter(
+            (_, index) =>
+              !updatePortfolioItemDto.clearSolutionImageIndex!.includes(index)
+          );
+
+          data.solutionImages = newImages;
+
+          return this.prisma.portfolioItem.update({
+            where: { id },
+            data,
+          });
+        })
+        .then((result) => (result ? this.addImageUrls(result) : null));
+    }
+
+    // Удаляем флаги удаления из данных перед сохранением
+    delete data.clearPoster;
+    delete data.clearReviewImage;
+    delete data.clearPreviewVideo;
+    delete data.clearFullVideo;
+    delete data.clearSolutionImageIndex;
 
     return this.prisma.portfolioItem
       .update({
