@@ -92,6 +92,14 @@ export class PortfolioService {
     if (updatePortfolioItemDto.clearFullVideo) {
       data.fullVideoPath = null;
     }
+    // Удаляем флаги удаления из данных перед сохранением
+    delete data.clearPoster;
+    delete data.clearReviewImage;
+    delete data.clearPreviewVideo;
+    delete data.clearFullVideo;
+    delete data.clearSolutionImageIndex;
+
+    // Обработка удаления solutionImages по индексам
     if (
       updatePortfolioItemDto.clearSolutionImageIndex &&
       updatePortfolioItemDto.clearSolutionImageIndex.length > 0
@@ -117,13 +125,6 @@ export class PortfolioService {
         })
         .then((result) => (result ? this.addImageUrls(result) : null));
     }
-
-    // Удаляем флаги удаления из данных перед сохранением
-    delete data.clearPoster;
-    delete data.clearReviewImage;
-    delete data.clearPreviewVideo;
-    delete data.clearFullVideo;
-    delete data.clearSolutionImageIndex;
 
     return this.prisma.portfolioItem
       .update({
