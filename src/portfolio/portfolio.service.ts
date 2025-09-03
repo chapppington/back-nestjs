@@ -79,17 +79,22 @@ export class PortfolioService {
       data.slug = generateSlug(updatePortfolioItemDto.name);
     }
 
-    // Обработка флагов удаления
-    if (updatePortfolioItemDto.clearPoster) {
+    // Обработка флагов удаления (приоритет у новых загруженных файлов)
+    const hasNewPoster = Boolean(updatePortfolioItemDto.poster);
+    const hasNewReviewImage = Boolean(updatePortfolioItemDto.reviewImage);
+    const hasNewPreviewVideo = Boolean(updatePortfolioItemDto.previewVideoPath);
+    const hasNewFullVideo = Boolean(updatePortfolioItemDto.fullVideoPath);
+
+    if (updatePortfolioItemDto.clearPoster && !hasNewPoster) {
       data.poster = null;
     }
-    if (updatePortfolioItemDto.clearReviewImage) {
+    if (updatePortfolioItemDto.clearReviewImage && !hasNewReviewImage) {
       data.reviewImage = null;
     }
-    if (updatePortfolioItemDto.clearPreviewVideo) {
+    if (updatePortfolioItemDto.clearPreviewVideo && !hasNewPreviewVideo) {
       data.previewVideoPath = null;
     }
-    if (updatePortfolioItemDto.clearFullVideo) {
+    if (updatePortfolioItemDto.clearFullVideo && !hasNewFullVideo) {
       data.fullVideoPath = null;
     }
     // Удаляем флаги удаления из данных перед сохранением
