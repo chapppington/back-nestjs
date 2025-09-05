@@ -142,6 +142,10 @@ export class ProductService {
       updateData.slug = generateSlug(updateProductDto.name);
     }
 
+    // Сохраняем индексы для удаления перед очисткой data
+    const clearAdvantageImageIndexes =
+      updateProductDto.clearAdvantageImageIndex;
+
     // Обработка флагов удаления
     if (updateProductDto.clearPreviewImage) {
       updateData.previewImage = null;
@@ -150,11 +154,13 @@ export class ProductService {
       updateData.model_3d_url = null;
     }
 
+    // Удаляем флаги удаления из данных перед сохранением
+    delete updateData.clearPreviewImage;
+    delete updateData.clearAdvantageImageIndex;
+    delete updateData.clearModel3d;
+
     // Обработка удаления изображений преимуществ
-    if (
-      updateProductDto.clearAdvantageImageIndex &&
-      updateProductDto.clearAdvantageImageIndex.length > 0
-    ) {
+    if (clearAdvantageImageIndexes && clearAdvantageImageIndexes.length > 0) {
       // Получаем текущие преимущества и удаляем указанные изображения
       return this.prisma.product
         .findUnique({ where: { id } })
@@ -168,7 +174,7 @@ export class ProductService {
 
           const newAdvantages = currentAdvantages.map(
             (advantage: any, index: number) => {
-              if (updateProductDto.clearAdvantageImageIndex!.includes(index)) {
+              if (clearAdvantageImageIndexes.includes(index)) {
                 return { ...advantage, image: null };
               }
               return advantage;
@@ -208,11 +214,6 @@ export class ProductService {
         set: JSON.parse(portfolioItems as any).map((id: string) => ({ id })),
       };
     }
-
-    // Удаляем флаги удаления из данных перед сохранением
-    delete updateData.clearPreviewImage;
-    delete updateData.clearAdvantageImageIndex;
-    delete updateData.clearModel3d;
 
     return this.prisma.product
       .update({
