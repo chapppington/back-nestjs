@@ -14,7 +14,10 @@ import {
 import { FileFieldsInterceptor } from "@nestjs/platform-express";
 import { ProductService } from "./product.service";
 import { CreateProductDto } from "./dto/create-product.dto";
-import { UpdateProductDto, UpdateProductOrderDto } from "./dto/update-product.dto";
+import {
+  UpdateProductDto,
+  UpdateProductOrderDto,
+} from "./dto/update-product.dto";
 import { ImportProductsRequestDto } from "./dto/import-product.dto";
 import { Role } from "@prisma/client";
 import { Auth } from "@/auth/decorators/auth.decorator";
@@ -173,6 +176,25 @@ export class ProductController {
       model_3d?: Express.Multer.File[];
     }
   ) {
+    // Convert clear flags from string to boolean if they exist
+    if (typeof updateProductDto.clearPreviewImage === "string") {
+      updateProductDto.clearPreviewImage =
+        updateProductDto.clearPreviewImage === "true";
+    }
+    if (typeof updateProductDto.clearModel3d === "string") {
+      updateProductDto.clearModel3d = updateProductDto.clearModel3d === "true";
+    }
+    // Parse clearAdvantageImageIndex from JSON string if it exists
+    if (typeof updateProductDto.clearAdvantageImageIndex === "string") {
+      try {
+        updateProductDto.clearAdvantageImageIndex = JSON.parse(
+          updateProductDto.clearAdvantageImageIndex
+        );
+      } catch (e) {
+        updateProductDto.clearAdvantageImageIndex = [];
+      }
+    }
+
     if (files?.previewImage?.length) {
       updateProductDto.previewImage = files.previewImage[0].filename;
     }

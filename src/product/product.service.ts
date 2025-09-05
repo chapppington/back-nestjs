@@ -142,6 +142,52 @@ export class ProductService {
       updateData.slug = generateSlug(updateProductDto.name);
     }
 
+    // Обработка флагов удаления
+    if (updateProductDto.clearPreviewImage) {
+      updateData.previewImage = null;
+    }
+    if (updateProductDto.clearModel3d) {
+      updateData.model_3d_url = null;
+    }
+
+    // Обработка удаления изображений преимуществ
+    if (
+      updateProductDto.clearAdvantageImageIndex &&
+      updateProductDto.clearAdvantageImageIndex.length > 0
+    ) {
+      // Получаем текущие преимущества и удаляем указанные изображения
+      return this.prisma.product
+        .findUnique({ where: { id } })
+        .then((item) => {
+          if (!item) return null;
+
+          const currentAdvantages =
+            typeof item.advantages === "string"
+              ? JSON.parse(item.advantages)
+              : item.advantages || [];
+
+          const newAdvantages = currentAdvantages.map(
+            (advantage: any, index: number) => {
+              if (updateProductDto.clearAdvantageImageIndex!.includes(index)) {
+                return { ...advantage, image: null };
+              }
+              return advantage;
+            }
+          );
+
+          updateData.advantages = newAdvantages;
+
+          return this.prisma.product.update({
+            where: { id },
+            data: updateData,
+            include: {
+              portfolioItems: true,
+            },
+          });
+        })
+        .then((result) => (result ? this.addFullUrls(result) : null));
+    }
+
     if (updateProductDto.importantCharacteristics)
       updateData.importantCharacteristics = JSON.parse(
         updateProductDto.importantCharacteristics as any
@@ -162,6 +208,11 @@ export class ProductService {
         set: JSON.parse(portfolioItems as any).map((id: string) => ({ id })),
       };
     }
+
+    // Удаляем флаги удаления из данных перед сохранением
+    delete updateData.clearPreviewImage;
+    delete updateData.clearAdvantageImageIndex;
+    delete updateData.clearModel3d;
 
     return this.prisma.product
       .update({
@@ -326,7 +377,7 @@ export class ProductService {
   async updateOrder(dto: UpdateProductOrderDto[]) {
     // Обновляем порядок товаров в транзакции
     await this.prisma.$transaction(
-      dto.map(item =>
+      dto.map((item) =>
         this.prisma.product.update({
           where: { id: item.id },
           data: { order: item.order },
