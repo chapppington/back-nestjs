@@ -12,11 +12,7 @@ export class PortfolioService {
     if (item.poster) {
       item.posterUrl = `/uploads/portfolio/${item.poster}`;
     }
-    if (item.solutionImages && item.solutionImages.length > 0) {
-      item.solutionImageUrls = item.solutionImages.map(
-        (image: string) => `/uploads/portfolio/${image}`
-      );
-    }
+    // Оставляем solutionImages как есть - фронтенд сам добавляет UPLOADS_URL
     if (item.reviewImage) {
       item.reviewImageUrl = `/uploads/portfolio/${item.reviewImage}`;
     }
