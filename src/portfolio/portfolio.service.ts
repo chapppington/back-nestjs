@@ -97,6 +97,10 @@ export class PortfolioService {
     if (updatePortfolioItemDto.clearFullVideo && !hasNewFullVideo) {
       data.fullVideoPath = null;
     }
+    // Сохраняем индексы для удаления перед очисткой data
+    const clearSolutionImageIndexes =
+      updatePortfolioItemDto.clearSolutionImageIndex;
+
     // Удаляем флаги удаления из данных перед сохранением
     delete data.clearPoster;
     delete data.clearReviewImage;
@@ -105,10 +109,7 @@ export class PortfolioService {
     delete data.clearSolutionImageIndex;
 
     // Обработка удаления solutionImages по индексам
-    if (
-      updatePortfolioItemDto.clearSolutionImageIndex &&
-      updatePortfolioItemDto.clearSolutionImageIndex.length > 0
-    ) {
+    if (clearSolutionImageIndexes && clearSolutionImageIndexes.length > 0) {
       // Получаем текущие solutionImages и удаляем указанные индексы
       return this.prisma.portfolioItem
         .findUnique({ where: { id } })
@@ -117,8 +118,7 @@ export class PortfolioService {
 
           const currentImages = item.solutionImages || [];
           const newImages = currentImages.filter(
-            (_, index) =>
-              !updatePortfolioItemDto.clearSolutionImageIndex!.includes(index)
+            (_, index) => !clearSolutionImageIndexes.includes(index)
           );
 
           data.solutionImages = newImages;

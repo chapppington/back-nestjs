@@ -162,6 +162,16 @@ export class PortfolioController {
       updatePortfolioItemDto.clearFullVideo =
         updatePortfolioItemDto.clearFullVideo === "true";
     }
+    // Parse clearSolutionImageIndex from JSON string if it exists
+    if (typeof updatePortfolioItemDto.clearSolutionImageIndex === "string") {
+      try {
+        updatePortfolioItemDto.clearSolutionImageIndex = JSON.parse(
+          updatePortfolioItemDto.clearSolutionImageIndex
+        );
+      } catch (e) {
+        updatePortfolioItemDto.clearSolutionImageIndex = [];
+      }
+    }
 
     if (files) {
       if (files.poster?.[0]) {
