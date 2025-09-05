@@ -56,9 +56,14 @@ export class ProductService {
       include: {
         portfolioItems: true,
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: [
+        {
+          order: "asc",
+        },
+        {
+          createdAt: "desc",
+        },
+      ],
     });
     return products.map(this.addFullUrls.bind(this));
   }
@@ -74,9 +79,14 @@ export class ProductService {
         include: {
           portfolioItems: true,
         },
-        orderBy: {
-          createdAt: "desc",
-        },
+        orderBy: [
+          {
+            order: "asc",
+          },
+          {
+            createdAt: "desc",
+          },
+        ],
         skip,
         take: limit,
       }),

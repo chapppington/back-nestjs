@@ -104,4 +104,7 @@ export class CreateProductDto {
   @IsOptional()
   @IsString()
   model_3d_url?: string;
+
+  @IsOptional()
+  order?: number;
 }
