@@ -90,6 +90,11 @@ export class ProductController {
 
     createProductDto.advantages = JSON.stringify(advantages);
 
+    // Обработка isShown - конвертируем строку в булево значение
+    if (createProductDto.isShown !== undefined) {
+      createProductDto.isShown = String(createProductDto.isShown) === "true";
+    }
+
     return this.productService.create(createProductDto);
   }
 
@@ -189,6 +194,10 @@ export class ProductController {
     }
     if (typeof updateProductDto.clearModel3d === "string") {
       updateProductDto.clearModel3d = updateProductDto.clearModel3d === "true";
+    }
+    // Обработка isShown - конвертируем строку в булево значение
+    if (updateProductDto.isShown !== undefined) {
+      updateProductDto.isShown = String(updateProductDto.isShown) === "true";
     }
     // Parse clearAdvantageImageIndex from JSON string if it exists
     if (typeof updateProductDto.clearAdvantageImageIndex === "string") {
