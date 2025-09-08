@@ -4,6 +4,7 @@ import {
   IsArray,
   ValidateNested,
   IsOptional,
+  IsBoolean,
 } from "class-validator";
 import { Type } from "class-transformer";
 
@@ -107,4 +108,8 @@ export class CreateProductDto {
 
   @IsOptional()
   order?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  isShown?: boolean;
 }

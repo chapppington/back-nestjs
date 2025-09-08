@@ -68,10 +68,27 @@ export class ProductService {
     return products.map(this.addFullUrls.bind(this));
   }
 
+  async findAllForAdmin() {
+    const products = await this.prisma.product.findMany({
+      include: {
+        portfolioItems: true,
+      },
+      orderBy: [
+        {
+          order: "asc",
+        },
+        {
+          createdAt: "desc",
+        },
+      ],
+    });
+    return products.map(this.addFullUrls.bind(this));
+  }
+
   async getCatalog(category?: string, page: number = 1, limit: number = 10) {
     const skip = (page - 1) * limit;
 
-    const where = category ? { category } : {};
+    const where = category ? { category, isShown: true } : { isShown: true };
 
     const [products, total] = await Promise.all([
       this.prisma.product.findMany({
@@ -133,7 +150,7 @@ export class ProductService {
   findByCategory(category: string) {
     return this.prisma.product
       .findMany({
-        where: { category },
+        where: { category, isShown: true },
         include: {
           portfolioItems: true,
         },

@@ -104,6 +104,12 @@ export class ProductController {
     return this.productService.findAll();
   }
 
+  @Get("admin")
+  @Auth(Role.MANAGER)
+  findAllForAdmin() {
+    return this.productService.findAllForAdmin();
+  }
+
   @Get("catalog")
   getCatalog(
     @Query("category") category?: string,
