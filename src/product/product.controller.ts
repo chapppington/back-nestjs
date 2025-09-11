@@ -42,6 +42,7 @@ export class ProductController {
         { name: "advantageImages_3", maxCount: 1 },
         { name: "advantageImages_4", maxCount: 1 },
         { name: "model_3d", maxCount: 1 },
+        { name: "documentation", maxCount: 1 },
       ],
       {
         storage: diskStorage({
@@ -169,6 +170,7 @@ export class ProductController {
         { name: "advantageImages_3", maxCount: 1 },
         { name: "advantageImages_4", maxCount: 1 },
         { name: "model_3d", maxCount: 1 },
+        { name: "documentation", maxCount: 1 },
       ],
       {
         storage: diskStorage({
