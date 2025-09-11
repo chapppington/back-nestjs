@@ -132,7 +132,7 @@ model Product {
   advantages  Json // JSON массив с преимуществами (от 3 до 5)
   simpleDescription Json @map("simple_description") // JSON с простым описанием
   detailedDescription Json @map("detailed_description") // JSON с детальным описанием
-  
+  documentation Json? // JSON с документацией
   order Int @default(0) // Порядок отображения
   isShown Boolean @default(true) @map("is_shown") // Флаг отображения в каталоге
   showAdvantages Boolean @default(true) @map("show_advantages") // Флаг отображения раздела преимуществ

@@ -59,6 +59,20 @@ export class DetailedDescriptionItemDto {
   description: string;
 }
 
+export class DocumentationItemDto {
+  @IsString()
+  @IsNotEmpty()
+  title: string;
+
+  @IsString()
+  @IsNotEmpty()
+  url: string;
+
+  @IsString()
+  @IsNotEmpty()
+  type: string;
+}
+
 export class CreateProductDto {
   @IsString()
   @IsNotEmpty()
@@ -101,6 +115,12 @@ export class CreateProductDto {
   @ValidateNested({ each: true })
   @Type(() => DetailedDescriptionItemDto)
   detailedDescription: { items: DetailedDescriptionItemDto[] };
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => DocumentationItemDto)
+  documentation?: DocumentationItemDto[];
 
   @IsOptional()
   @IsString()
