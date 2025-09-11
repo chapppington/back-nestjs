@@ -112,4 +112,8 @@ export class CreateProductDto {
   @IsOptional()
   @IsBoolean()
   isShown?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  showAdvantages?: boolean;
 }

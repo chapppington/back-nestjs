@@ -135,6 +135,7 @@ model Product {
   
   order Int @default(0) // Порядок отображения
   isShown Boolean @default(true) @map("is_shown") // Флаг отображения в каталоге
+  showAdvantages Boolean @default(true) @map("show_advantages") // Флаг отображения раздела преимуществ
   // Поля для 3D модели
   model_3d_url    String?  @map("model_3d_url") // Путь к 3D модели
   
