@@ -117,14 +117,12 @@ export class CreateProductDto {
   detailedDescription: { items: DetailedDescriptionItemDto[] };
 
   @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => DocumentationItemDto)
-  documentation?: DocumentationItemDto[];
+  @IsString()
+  model_3d_url?: string;
 
   @IsOptional()
   @IsString()
-  model_3d_url?: string;
+  documentation?: string;
 
   @IsOptional()
   order?: number;

@@ -66,6 +66,7 @@ export class ProductController {
       advantageImages_3?: Express.Multer.File[];
       advantageImages_4?: Express.Multer.File[];
       model_3d?: Express.Multer.File[];
+      documentation?: Express.Multer.File[];
     }
   ) {
     if (files?.previewImage?.length) {
@@ -73,6 +74,9 @@ export class ProductController {
     }
     if (files?.model_3d?.length) {
       createProductDto.model_3d_url = files.model_3d[0].filename;
+    }
+    if (files?.documentation?.length) {
+      createProductDto.documentation = files.documentation[0].filename;
     }
 
     // Обрабатываем файлы изображений преимуществ по индексам
@@ -190,6 +194,7 @@ export class ProductController {
       advantageImages_3?: Express.Multer.File[];
       advantageImages_4?: Express.Multer.File[];
       model_3d?: Express.Multer.File[];
+      documentation?: Express.Multer.File[];
     }
   ) {
     // Convert clear flags from string to boolean if they exist
@@ -225,6 +230,9 @@ export class ProductController {
     }
     if (files?.model_3d?.length) {
       updateProductDto.model_3d_url = files.model_3d[0].filename;
+    }
+    if (files?.documentation?.length) {
+      updateProductDto.documentation = files.documentation[0].filename;
     }
 
     if (updateProductDto.advantages !== undefined) {
