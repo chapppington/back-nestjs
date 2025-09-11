@@ -94,6 +94,11 @@ export class ProductController {
     if (createProductDto.isShown !== undefined) {
       createProductDto.isShown = String(createProductDto.isShown) === "true";
     }
+    // Обработка showAdvantages - конвертируем строку в булево значение
+    if (createProductDto.showAdvantages !== undefined) {
+      createProductDto.showAdvantages =
+        String(createProductDto.showAdvantages) === "true";
+    }
 
     return this.productService.create(createProductDto);
   }
@@ -198,6 +203,11 @@ export class ProductController {
     // Обработка isShown - конвертируем строку в булево значение
     if (updateProductDto.isShown !== undefined) {
       updateProductDto.isShown = String(updateProductDto.isShown) === "true";
+    }
+    // Обработка showAdvantages - конвертируем строку в булево значение
+    if (updateProductDto.showAdvantages !== undefined) {
+      updateProductDto.showAdvantages =
+        String(updateProductDto.showAdvantages) === "true";
     }
     // Parse clearAdvantageImageIndex from JSON string if it exists
     if (typeof updateProductDto.clearAdvantageImageIndex === "string") {
