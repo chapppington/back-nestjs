@@ -45,11 +45,18 @@ export class NewsService {
       .then(this.addImageUrl.bind(this));
   }
 
-  async findAll() {
+  async findAll(options?: {
+    limit?: number;
+    sort?: "date" | "createdAt";
+    order?: "asc" | "desc";
+  }) {
+    const { limit, sort = "createdAt", order = "desc" } = options || {};
+
     const news = await this.prisma.news.findMany({
       orderBy: {
-        createdAt: "desc",
+        [sort]: order,
       },
+      ...(limit && { take: limit }),
     });
     return news.map(this.addImageUrl.bind(this));
   }

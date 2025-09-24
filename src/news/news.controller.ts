@@ -10,6 +10,7 @@ import {
   UseInterceptors,
   UploadedFile,
   Logger,
+  Query,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { NewsService } from "./news.service";
@@ -60,8 +61,16 @@ export class NewsController {
   }
 
   @Get()
-  findAll() {
-    return this.newsService.findAll();
+  findAll(
+    @Query("limit") limit?: string,
+    @Query("sort") sort?: string,
+    @Query("order") order?: string
+  ) {
+    return this.newsService.findAll({
+      limit: limit ? parseInt(limit) : undefined,
+      sort: sort as "date" | "createdAt" | undefined,
+      order: order as "asc" | "desc" | undefined,
+    });
   }
 
   @Get(":id")
