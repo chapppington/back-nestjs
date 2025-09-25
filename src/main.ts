@@ -25,10 +25,7 @@ async function bootstrap() {
 
   app.use(cookieParser());
   app.enableCors({
-    origin: [
-      "http://localhost:3000",
-      "https://testsk2.ru",
-    ],
+    origin: ["https://sibkomplekt.ru"],
     credentials: true,
     exposedHeaders: "set-cookie",
   });
