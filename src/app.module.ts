@@ -16,6 +16,7 @@ import { ProductionPageConfigModule } from "./production-page-config/production-
 import { VacanciesPageConfigModule } from "./vacancies-page-config/vacancies-page-config.module";
 import { CertificatesPageConfigModule } from "./certificates-page-config/certificates-page-config.module";
 import { ContactsPageConfigModule } from "./contacts-page-config/contacts-page-config.module";
+import { AboutPageConfigModule } from "./about-page-config/about-page-config.module";
 import { SubmissionsModule } from "./submissions/submissions.module";
 
 @Module({
@@ -38,6 +39,7 @@ import { SubmissionsModule } from "./submissions/submissions.module";
     VacanciesPageConfigModule,
     CertificatesPageConfigModule,
     ContactsPageConfigModule,
+    AboutPageConfigModule,
     SubmissionsModule,
   ],
 })

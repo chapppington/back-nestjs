@@ -245,6 +245,18 @@ model ContactsPageConfig {
   @@map("contacts_page_config")
 }
 
+model AboutPageConfig {
+  id            String   @id @default(cuid())
+  firstScreen   Json     @map("first_screen")   // { bg_image, title, subtitle, button_text, button_href, stats }
+  historyScreen Json     @map("history_screen") // { brackets_text, title, description, history_events }
+  teamScreen    Json     @map("team_screen")    // { brackets_text, title, description, cta_text, cta_button_text, cta_button_href, team_members }
+  
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("about_page_config")
+}
+
 /// Тип формы, из которой пришла заявка
 enum FormType {
   REQUEST        // Общая заявка с сайта (navbar popup и т.п.)
