@@ -55,5 +55,21 @@ export class CreateSubmissionDto {
   consent: boolean;
 
   @IsOptional()
+  @Transform(({ value }) => {
+    // Если значение уже объект, возвращаем как есть
+    if (typeof value === "object" && value !== null) {
+      return value;
+    }
+    // Если это строка, пытаемся распарсить JSON
+    if (typeof value === "string") {
+      try {
+        return JSON.parse(value);
+      } catch (error) {
+        // Если не удалось распарсить, возвращаем как есть
+        return value;
+      }
+    }
+    return value;
+  })
   meta?: any;
 }
