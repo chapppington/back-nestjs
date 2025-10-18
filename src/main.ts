@@ -1,4 +1,4 @@
-import { RequestMethod } from "@nestjs/common";
+import { RequestMethod, ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import * as cookieParser from "cookie-parser";
 import { AppModule } from "./app.module";
@@ -22,6 +22,14 @@ async function bootstrap() {
       { path: "verify-email", method: RequestMethod.GET },
     ],
   });
+
+  // Enable validation with transformation
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+    })
+  );
 
   app.use(cookieParser());
   app.enableCors({
