@@ -5,6 +5,7 @@ import type { Response } from "express";
 export class RefreshTokenService {
   readonly EXPIRE_DAY_REFRESH_TOKEN = 7;
   readonly REFRESH_TOKEN_NAME = "refreshToken";
+  readonly ACCESS_TOKEN_NAME = "accessToken";
 
   addRefreshTokenToResponse(res: Response, refreshToken: string) {
     const expiresIn = new Date();
@@ -26,6 +27,15 @@ export class RefreshTokenService {
       expires: new Date(0),
       secure: true, // true if production
       sameSite: "lax", // lax if production
+    });
+  }
+
+  removeAccessTokenFromResponse(res: Response) {
+    res.cookie(this.ACCESS_TOKEN_NAME, "", {
+      domain: "sibkomplekt.ru",
+      expires: new Date(0),
+      secure: true,
+      sameSite: "strict",
     });
   }
 }

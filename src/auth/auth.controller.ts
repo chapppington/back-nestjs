@@ -72,6 +72,7 @@ export class AuthController {
   @Post("auth/logout")
   async logout(@Res({ passthrough: true }) res: Response) {
     this.refreshTokenService.removeRefreshTokenFromResponse(res);
+    this.refreshTokenService.removeAccessTokenFromResponse(res);
 
     return true;
   }
