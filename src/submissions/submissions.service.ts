@@ -1,11 +1,17 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, Logger } from "@nestjs/common";
 import { PrismaService } from "src/prisma.service";
 import { CreateSubmissionDto } from "./dto/create-submission.dto";
 import { UpdateSubmissionDto } from "./dto/update-submission.dto";
+import { EmailService } from "@/email/email.service";
 
 @Injectable()
 export class SubmissionsService {
-  constructor(private prisma: PrismaService) {}
+  private readonly logger = new Logger(SubmissionsService.name);
+
+  constructor(
+    private prisma: PrismaService,
+    private emailService: EmailService
+  ) {}
 
   private addFileUrls(submission: any) {
     if (submission.files && submission.files.length > 0) {
@@ -16,7 +22,7 @@ export class SubmissionsService {
     return submission;
   }
 
-  create(createSubmissionDto: CreateSubmissionDto) {
+  async create(createSubmissionDto: CreateSubmissionDto) {
     // Преобразуем consent из строки в булево значение
     const data = {
       ...createSubmissionDto,
@@ -25,11 +31,25 @@ export class SubmissionsService {
         createSubmissionDto.consent === true,
     };
 
-    return this.prisma.formSubmission
+    const submission = await this.prisma.formSubmission
       .create({
         data,
       })
       .then(this.addFileUrls.bind(this));
+
+    // Отправляем уведомление по email о новой заявке
+    try {
+      await this.emailService.sendSubmissionNotification(submission);
+      this.logger.log(`Email уведомление отправлено для заявки ID: ${submission.id}`);
+    } catch (error) {
+      this.logger.error(
+        `Не удалось отправить email уведомление для заявки ID: ${submission.id}`,
+        error.stack
+      );
+      // Не прерываем создание заявки, если email не отправился
+    }
+
+    return submission;
   }
 
   async findAll() {
