@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
+import { questionsConfig } from './questionnaire-config';
 
 export interface SendEmailOptions {
   to: string;
@@ -94,7 +95,115 @@ export class EmailService {
   }
 
   /**
-   * Форматирует JSON данные в красивую HTML таблицу
+   * Получает заголовок вопроса по ID
+   */
+  private getQuestionTitle(questionId: string): string {
+    const question = questionsConfig.find((q) => q.id === parseInt(questionId));
+    if (!question) {
+      return `Вопрос ${questionId}`;
+    }
+    // Удаляем номер из заголовка (например, "01 · " -> "")
+    return question.title.replace(/^\d+\s*·\s*/, '');
+  }
+
+  /**
+   * Получает человекочитаемую метку для ответа
+   */
+  private getAnswerLabel(questionId: string, value: unknown): string {
+    const question = questionsConfig.find((q) => q.id === parseInt(questionId));
+    
+    if (!question) return String(value);
+
+    // Если значение - массив (множественный выбор)
+    if (Array.isArray(value)) {
+      if (value.length === 0) return '—';
+      return value
+        .map((v) => {
+          const option = question.options?.find((opt) => opt.value === v);
+          return option?.label || v;
+        })
+        .join(', ');
+    }
+
+    // Если значение - объект (например, для feeder_sections)
+    if (typeof value === 'object' && value !== null) {
+      if (question.type === 'feeder_sections') {
+        const entries = Object.entries(value as Record<string, any>);
+        return entries
+          .map(([key, val]) => `${key}: ${val}`)
+          .join('; ');
+      }
+      return JSON.stringify(value, null, 2);
+    }
+
+    // Если пустое значение
+    if (value === '' || value === null || value === undefined) {
+      return '—';
+    }
+
+    // Ищем соответствующий option
+    const option = question.options?.find((opt) => opt.value === value);
+    return option?.label || String(value);
+  }
+
+  /**
+   * Форматирует данные опросника в компактном виде (как в админке)
+   */
+  private formatQuestionnaireDataAsHtml(questionnaireData: any): string {
+    if (!questionnaireData || typeof questionnaireData !== 'object') {
+      return '';
+    }
+
+    // Фильтруем только заполненные ответы и сортируем по ID вопроса
+    const filledAnswers = Object.entries(questionnaireData)
+      .filter(
+        ([_, value]) =>
+          value !== '' &&
+          value !== null &&
+          value !== undefined &&
+          !(Array.isArray(value) && value.length === 0)
+      )
+      .sort(([a], [b]) => parseInt(a) - parseInt(b));
+
+    if (filledAnswers.length === 0) {
+      return '<p style="color: #999; font-style: italic;">Нет заполненных ответов</p>';
+    }
+
+    let html = `
+      <div style="background-color: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #e0e0e0;">
+        <div style="margin-bottom: 10px; color: #666; font-size: 13px;">
+          ${filledAnswers.length} ${filledAnswers.length === 1 ? 'ответ' : filledAnswers.length < 5 ? 'ответа' : 'ответов'}
+        </div>
+    `;
+
+    filledAnswers.forEach(([questionId, value]) => {
+      const questionTitle = this.getQuestionTitle(questionId);
+      const answerLabel = this.getAnswerLabel(questionId, value);
+      const paddedId = questionId.padStart(2, '0');
+
+      html += `
+        <div style="display: flex; gap: 12px; padding: 10px; margin-bottom: 8px; background-color: white; border-radius: 6px; border: 1px solid #e8e8e8; transition: background-color 0.2s;">
+          <div style="min-width: 30px; font-weight: 600; color: #666; font-size: 12px;">
+            ${paddedId}
+          </div>
+          <div style="flex: 1;">
+            <div style="font-size: 13px; color: #666; margin-bottom: 4px;">
+              ${questionTitle}
+            </div>
+            <div style="font-size: 14px; font-weight: 500; color: #222;">
+              ${answerLabel}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    html += '</div>';
+    return html;
+  }
+
+  /**
+   * Форматирует обычные метаданные в HTML таблицу (для не-опросных форм)
    */
   private formatMetaDataAsHtml(meta: any): string {
     if (!meta || typeof meta !== 'object') {
@@ -145,6 +254,19 @@ export class EmailService {
   }
 
   /**
+   * Получает русское название типа формы
+   */
+  private getFormTypeLabel(formType: string): string {
+    const formTypeMap: Record<string, string> = {
+      'VACANCY': 'Отклик на вакансию',
+      'QUESTIONNAIRE': 'Опросный лист',
+      'REQUEST': 'Заявка',
+      'DEFAULT': 'Обращение'
+    };
+    return formTypeMap[formType] || 'Заявка';
+  }
+
+  /**
    * Отправляет уведомление о новой заявке
    * @param submissionData - Данные заявки
    */
@@ -168,11 +290,12 @@ export class EmailService {
       });
     }
 
-    const subject = `Новая заявка: ${formType}`;
+    const formTypeLabel = this.getFormTypeLabel(formType);
+    const subject = formTypeLabel;
     const backendUrl = 'https://sibkomplekt.ru';
     
-    let text = `Получена новая заявка\n\n`;
-    text += `Тип формы: ${formType}\n`;
+    let text = `${formTypeLabel}\n\n`;
+    text += `Тип: ${formTypeLabel}\n`;
     text += `Имя: ${name}\n`;
     if (email) text += `Email: ${email}\n`;
     if (phone) text += `Телефон: ${phone}\n`;
@@ -191,7 +314,7 @@ export class EmailService {
     let html = `
       <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto;">
         <h2 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px;">
-          Получена новая заявка
+          ${formTypeLabel}
         </h2>
         
         <table style="border-collapse: collapse; width: 100%; margin-bottom: 20px;">
@@ -200,7 +323,7 @@ export class EmailService {
               Тип формы:
             </td>
             <td style="padding: 12px; border: 1px solid #ddd;">
-              ${formType}
+              ${formTypeLabel}
             </td>
           </tr>
           <tr>
@@ -296,12 +419,15 @@ export class EmailService {
 
     // Добавляем секцию с данными опросного листа (QUESTIONNAIRE)
     if (meta && formType === 'QUESTIONNAIRE') {
+      // Проверяем, есть ли questionnaireData в meta
+      const questionnaireData = meta.questionnaireData || meta;
+      
       html += `
         <div style="margin: 20px 0;">
-          <h3 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 8px;">
+          <h3 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 8px; margin-bottom: 15px;">
             📋 Данные опросного листа
           </h3>
-          ${this.formatMetaDataAsHtml(meta)}
+          ${this.formatQuestionnaireDataAsHtml(questionnaireData)}
         </div>
       `;
     }
