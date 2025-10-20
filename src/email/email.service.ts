@@ -94,13 +94,64 @@ export class EmailService {
   }
 
   /**
+   * Форматирует JSON данные в красивую HTML таблицу
+   */
+  private formatMetaDataAsHtml(meta: any): string {
+    if (!meta || typeof meta !== 'object') {
+      return '';
+    }
+
+    const formatValue = (value: any): string => {
+      if (value === null || value === undefined) {
+        return '<em>не указано</em>';
+      }
+      if (typeof value === 'boolean') {
+        return value ? 'Да' : 'Нет';
+      }
+      if (Array.isArray(value)) {
+        return value.join(', ');
+      }
+      if (typeof value === 'object') {
+        return JSON.stringify(value, null, 2).replace(/\n/g, '<br>').replace(/ /g, '&nbsp;');
+      }
+      return String(value);
+    };
+
+    const formatLabel = (key: string): string => {
+      // Преобразуем camelCase в читаемый текст
+      return key
+        .replace(/([A-Z])/g, ' $1')
+        .replace(/^./, (str) => str.toUpperCase())
+        .trim();
+    };
+
+    let html = '<table style="border-collapse: collapse; width: 100%; margin-top: 15px;">';
+    
+    for (const [key, value] of Object.entries(meta)) {
+      html += `
+        <tr>
+          <td style="padding: 8px; border: 1px solid #ddd; background-color: #f5f5f5; font-weight: bold; width: 40%;">
+            ${formatLabel(key)}
+          </td>
+          <td style="padding: 8px; border: 1px solid #ddd;">
+            ${formatValue(value)}
+          </td>
+        </tr>
+      `;
+    }
+    
+    html += '</table>';
+    return html;
+  }
+
+  /**
    * Отправляет уведомление о новой заявке
    * @param submissionData - Данные заявки
    */
   async sendSubmissionNotification(submissionData: any): Promise<void> {
     this.logger.log('=== Подготовка уведомления о заявке ===');
     
-    const { formType, name, email, phone, comments, files } = submissionData;
+    const { formType, name, email, phone, comments, files, meta } = submissionData;
 
     this.logger.log(`Тип формы: ${formType}`);
     this.logger.log(`Имя отправителя: ${name}`);
@@ -108,6 +159,7 @@ export class EmailService {
     this.logger.log(`Телефон отправителя: ${phone || 'не указан'}`);
     this.logger.log(`Есть комментарии: ${!!comments}`);
     this.logger.log(`Количество файлов: ${files?.length || 0}`);
+    this.logger.log(`Есть meta данные: ${!!meta}`);
     
     if (files && files.length > 0) {
       this.logger.log('Прикрепленные файлы:');
@@ -117,6 +169,7 @@ export class EmailService {
     }
 
     const subject = `Новая заявка: ${formType}`;
+    const backendUrl = 'https://sibkomplekt.ru';
     
     let text = `Получена новая заявка\n\n`;
     text += `Тип формы: ${formType}\n`;
@@ -127,46 +180,146 @@ export class EmailService {
     if (files && files.length > 0) {
       text += `\nПрикрепленные файлы:\n`;
       files.forEach((file: string) => {
-        text += `- ${file}\n`;
+        text += `- ${backendUrl}/uploads/submissions/${file}\n`;
       });
     }
+    if (meta) {
+      text += `\nДополнительные данные: ${JSON.stringify(meta, null, 2)}\n`;
+    }
 
-    const html = `
-      <h2>Получена новая заявка</h2>
-      <table style="border-collapse: collapse; width: 100%;">
-        <tr>
-          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Тип формы:</strong></td>
-          <td style="padding: 8px; border: 1px solid #ddd;">${formType}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Имя:</strong></td>
-          <td style="padding: 8px; border: 1px solid #ddd;">${name}</td>
-        </tr>
-        ${email ? `
-        <tr>
-          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Email:</strong></td>
-          <td style="padding: 8px; border: 1px solid #ddd;">${email}</td>
-        </tr>
-        ` : ''}
-        ${phone ? `
-        <tr>
-          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Телефон:</strong></td>
-          <td style="padding: 8px; border: 1px solid #ddd;">${phone}</td>
-        </tr>
-        ` : ''}
-        ${comments ? `
-        <tr>
-          <td style="padding: 8px; border: 1px solid #ddd;"><strong>Комментарии:</strong></td>
-          <td style="padding: 8px; border: 1px solid #ddd;">${comments}</td>
-        </tr>
-        ` : ''}
-      </table>
-      ${files && files.length > 0 ? `
-      <h3>Прикрепленные файлы:</h3>
-      <ul>
-        ${files.map((file: string) => `<li>${file}</li>`).join('')}
-      </ul>
-      ` : ''}
+    // Формируем HTML для основной информации
+    let html = `
+      <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto;">
+        <h2 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px;">
+          Получена новая заявка
+        </h2>
+        
+        <table style="border-collapse: collapse; width: 100%; margin-bottom: 20px;">
+          <tr>
+            <td style="padding: 12px; border: 1px solid #ddd; background-color: #f5f5f5; font-weight: bold; width: 30%;">
+              Тип формы:
+            </td>
+            <td style="padding: 12px; border: 1px solid #ddd;">
+              ${formType}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 12px; border: 1px solid #ddd; background-color: #f5f5f5; font-weight: bold;">
+              Имя:
+            </td>
+            <td style="padding: 12px; border: 1px solid #ddd;">
+              ${name}
+            </td>
+          </tr>
+          ${email ? `
+          <tr>
+            <td style="padding: 12px; border: 1px solid #ddd; background-color: #f5f5f5; font-weight: bold;">
+              Email:
+            </td>
+            <td style="padding: 12px; border: 1px solid #ddd;">
+              <a href="mailto:${email}" style="color: #007bff; text-decoration: none;">${email}</a>
+            </td>
+          </tr>
+          ` : ''}
+          ${phone ? `
+          <tr>
+            <td style="padding: 12px; border: 1px solid #ddd; background-color: #f5f5f5; font-weight: bold;">
+              Телефон:
+            </td>
+            <td style="padding: 12px; border: 1px solid #ddd;">
+              <a href="tel:${phone}" style="color: #007bff; text-decoration: none;">${phone}</a>
+            </td>
+          </tr>
+          ` : ''}
+          ${comments ? `
+          <tr>
+            <td style="padding: 12px; border: 1px solid #ddd; background-color: #f5f5f5; font-weight: bold;">
+              Комментарии:
+            </td>
+            <td style="padding: 12px; border: 1px solid #ddd;">
+              ${comments}
+            </td>
+          </tr>
+          ` : ''}
+        </table>
+    `;
+
+    // Добавляем секцию с файлами для резюме (VACANCY)
+    if (files && files.length > 0 && formType === 'VACANCY') {
+      html += `
+        <div style="margin: 20px 0; padding: 20px; background-color: #f8f9fa; border-radius: 8px; border-left: 4px solid #28a745;">
+          <h3 style="color: #28a745; margin-top: 0;">📄 Резюме кандидата</h3>
+          ${files.map((file: string) => {
+            const fileUrl = `${backendUrl}/uploads/submissions/${file}`;
+            return `
+              <div style="margin: 10px 0;">
+                <a href="${fileUrl}" 
+                   style="display: inline-block; 
+                          padding: 12px 24px; 
+                          background-color: #28a745; 
+                          color: white; 
+                          text-decoration: none; 
+                          border-radius: 5px;
+                          font-weight: bold;
+                          transition: background-color 0.3s;">
+                  📥 Смотреть резюме кандидата
+                </a>
+                <p style="margin: 5px 0; color: #666; font-size: 12px;">
+                  Файл: ${file}
+                </p>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    } 
+    // Для других типов форм просто показываем список файлов
+    else if (files && files.length > 0) {
+      html += `
+        <div style="margin: 20px 0;">
+          <h3 style="color: #333;">📎 Прикрепленные файлы:</h3>
+          <ul style="list-style: none; padding: 0;">
+            ${files.map((file: string) => {
+              const fileUrl = `${backendUrl}/uploads/submissions/${file}`;
+              return `
+                <li style="margin: 8px 0;">
+                  <a href="${fileUrl}" style="color: #007bff; text-decoration: none;">
+                    📄 ${file}
+                  </a>
+                </li>
+              `;
+            }).join('')}
+          </ul>
+        </div>
+      `;
+    }
+
+    // Добавляем секцию с данными опросного листа (QUESTIONNAIRE)
+    if (meta && formType === 'QUESTIONNAIRE') {
+      html += `
+        <div style="margin: 20px 0;">
+          <h3 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 8px;">
+            📋 Данные опросного листа
+          </h3>
+          ${this.formatMetaDataAsHtml(meta)}
+        </div>
+      `;
+    }
+    // Для других типов форм показываем meta данные если есть
+    else if (meta) {
+      html += `
+        <div style="margin: 20px 0;">
+          <h3 style="color: #333;">📝 Дополнительная информация:</h3>
+          ${this.formatMetaDataAsHtml(meta)}
+        </div>
+      `;
+    }
+
+    html += `
+        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd; color: #666; font-size: 12px;">
+          <p>Это автоматическое уведомление. Не отвечайте на это письмо.</p>
+        </div>
+      </div>
     `;
 
     const recipientEmail = this.configService.get('MAIL_RECIPIENT') || this.configService.get('MAIL_USER');
