@@ -3,6 +3,7 @@ import { PrismaService } from "src/prisma.service";
 import { CreateSubmissionDto } from "./dto/create-submission.dto";
 import { UpdateSubmissionDto } from "./dto/update-submission.dto";
 import { EmailService } from "@/email/email.service";
+import { BitrixService } from "@/bitrix/bitrix.service";
 
 @Injectable()
 export class SubmissionsService {
@@ -10,7 +11,8 @@ export class SubmissionsService {
 
   constructor(
     private prisma: PrismaService,
-    private emailService: EmailService
+    private emailService: EmailService,
+    private bitrixService: BitrixService
   ) {}
 
   private addFileUrls(submission: any) {
@@ -47,6 +49,18 @@ export class SubmissionsService {
         error.stack
       );
       // Не прерываем создание заявки, если email не отправился
+    }
+
+    // Создаем лид в Bitrix24
+    try {
+      await this.createBitrixLead(submission);
+      this.logger.log(`Лид в Bitrix24 создан для заявки ID: ${submission.id}`);
+    } catch (error) {
+      this.logger.error(
+        `Не удалось создать лид в Bitrix24 для заявки ID: ${submission.id}`,
+        error.stack
+      );
+      // Не прерываем создание заявки, если Bitrix не отправился
     }
 
     return submission;
@@ -98,5 +112,93 @@ export class SubmissionsService {
       },
     });
     return submissions.map(this.addFileUrls.bind(this));
+  }
+
+  /**
+   * Создает лид в Bitrix24 на основе данных заявки
+   */
+  private async createBitrixLead(submission: any): Promise<number> {
+    const { formType, name, email, phone, comments, files, meta } = submission;
+
+    // Определяем заголовок лида в зависимости от типа формы
+    const titleMap: Record<string, string> = {
+      VACANCY: 'Отклик на вакансию с сайта',
+      QUESTIONNAIRE: 'Опросный лист с сайта',
+      REQUEST: 'Заявка с сайта',
+      DEFAULT: 'Обращение с сайта',
+    };
+
+    const title = titleMap[formType] || 'Заявка с сайта';
+
+    // Формируем комментарий, добавляя информацию из meta если есть
+    let leadComments = comments || '';
+
+    if (meta && formType === 'QUESTIONNAIRE' && meta.questionnaireData) {
+      leadComments += '\n\n=== Данные опросного листа ===\n';
+      leadComments += this.formatQuestionnaireDataForBitrix(meta.questionnaireData);
+    } else if (meta) {
+      leadComments += '\n\n=== Дополнительная информация ===\n';
+      leadComments += JSON.stringify(meta, null, 2);
+    }
+
+    // Разбиваем имя на части (если есть фамилия и отчество)
+    const nameParts = name.split(' ');
+    const firstName = nameParts[0] || name;
+    const lastName = nameParts.length > 1 ? nameParts[nameParts.length - 1] : '';
+    const secondName = nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '';
+
+    // Создаем лид в Bitrix24
+    const leadId = await this.bitrixService.createLead(
+      {
+        title,
+        name: firstName,
+        lastName,
+        secondName,
+        email,
+        phone,
+        comments: leadComments,
+        web: 'https://sibkomplekt.ru',
+      },
+      files
+    );
+
+    return leadId;
+  }
+
+  /**
+   * Форматирует данные опросника для комментария в Bitrix
+   */
+  private formatQuestionnaireDataForBitrix(questionnaireData: any): string {
+    if (!questionnaireData || typeof questionnaireData !== 'object') {
+      return '';
+    }
+
+    let result = '';
+    const entries = Object.entries(questionnaireData).filter(
+      ([_, value]) =>
+        value !== '' &&
+        value !== null &&
+        value !== undefined &&
+        !(Array.isArray(value) && value.length === 0)
+    );
+
+    entries.forEach(([questionId, value]) => {
+      result += `Вопрос ${questionId}: ${this.formatValue(value)}\n`;
+    });
+
+    return result;
+  }
+
+  /**
+   * Форматирует значение для текстового представления
+   */
+  private formatValue(value: any): string {
+    if (Array.isArray(value)) {
+      return value.join(', ');
+    }
+    if (typeof value === 'object' && value !== null) {
+      return JSON.stringify(value);
+    }
+    return String(value);
   }
 }
