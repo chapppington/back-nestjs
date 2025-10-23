@@ -141,6 +141,14 @@ export class SubmissionsService {
       leadComments += JSON.stringify(meta, null, 2);
     }
 
+    // Добавляем ссылки на файлы в комментарии
+    if (files && files.length > 0) {
+      leadComments += '\n\n=== Прикрепленные файлы ===\n';
+      files.forEach((file: string) => {
+        leadComments += `https://sibkomplekt.ru/uploads/submissions/${file}\n`;
+      });
+    }
+
     // Разбиваем имя на части (если есть фамилия и отчество)
     const nameParts = name.split(' ');
     const firstName = nameParts[0] || name;
@@ -148,19 +156,16 @@ export class SubmissionsService {
     const secondName = nameParts.length > 2 ? nameParts.slice(1, -1).join(' ') : '';
 
     // Создаем лид в Bitrix24
-    const leadId = await this.bitrixService.createLead(
-      {
-        title,
-        name: firstName,
-        lastName,
-        secondName,
-        email,
-        phone,
-        comments: leadComments,
-        web: 'https://sibkomplekt.ru',
-      },
-      files
-    );
+    const leadId = await this.bitrixService.createLead({
+      title,
+      name: firstName,
+      lastName,
+      secondName,
+      email,
+      phone,
+      comments: leadComments,
+      web: 'https://sibkomplekt.ru',
+    });
 
     return leadId;
   }

@@ -1,8 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import axios from 'axios';
-import { readFile } from 'fs/promises';
-import { join } from 'path';
 
 export interface BitrixLeadData {
   title: string;
@@ -15,11 +13,6 @@ export interface BitrixLeadData {
   companyTitle?: string;
   addressCity?: string;
   web?: string;
-}
-
-export interface BitrixFileData {
-  filename: string;
-  content: string; // base64 encoded
 }
 
 @Injectable()
@@ -39,16 +32,14 @@ export class BitrixService {
   /**
    * Создает лид в Bitrix24
    * @param leadData - Данные лида
-   * @param files - Массив путей к файлам (опционально)
    * @returns ID созданного лида
    */
-  async createLead(leadData: BitrixLeadData, files?: string[]): Promise<number> {
+  async createLead(leadData: BitrixLeadData): Promise<number> {
     this.logger.log('=== Начало создания лида в Bitrix24 ===');
     this.logger.log(`Заголовок лида: ${leadData.title}`);
     this.logger.log(`Имя клиента: ${leadData.name}`);
     this.logger.log(`Email: ${leadData.email || 'не указан'}`);
     this.logger.log(`Телефон: ${leadData.phone || 'не указан'}`);
-    this.logger.log(`Количество файлов: ${files?.length || 0}`);
 
     try {
       // Подготавливаем данные для создания лида
@@ -58,6 +49,7 @@ export class BitrixService {
         NAME: leadData.name,
         OPENED: 'Y', // Доступен для всех
         STATUS_ID: 'NEW', // Статус "Новый"
+        SOURCE_ID: 'WEB', // Источник - веб-сайт
       };
 
       // Добавляем опциональные поля
@@ -95,19 +87,6 @@ export class BitrixService {
             VALUE_TYPE: 'WORK',
           },
         ];
-      }
-
-      // Если есть файлы, читаем их и конвертируем в base64
-      if (files && files.length > 0) {
-        this.logger.log('Обработка файлов для прикрепления к лиду...');
-        const fileDataArray = await this.prepareFiles(files);
-        
-        // Добавляем файлы в поле fileData (как в документации Bitrix24)
-        fileDataArray.forEach((fileData, index) => {
-          fields[`fileData[${index}]`] = [fileData.filename, fileData.content];
-        });
-
-        this.logger.log(`Подготовлено ${fileDataArray.length} файлов для отправки`);
       }
 
       // Формируем данные запроса
@@ -155,38 +134,6 @@ export class BitrixService {
       this.logger.error(`Stack trace:`, error.stack);
       throw error;
     }
-  }
-
-  /**
-   * Читает файлы и конвертирует их в base64
-   * @param filePaths - Массив имен файлов
-   * @returns Массив объектов с данными файлов
-   */
-  private async prepareFiles(filePaths: string[]): Promise<BitrixFileData[]> {
-    const uploadsDir = './uploads/submissions';
-    const fileDataArray: BitrixFileData[] = [];
-
-    for (const fileName of filePaths) {
-      try {
-        const filePath = join(uploadsDir, fileName);
-        this.logger.log(`Чтение файла: ${filePath}`);
-        
-        const fileBuffer = await readFile(filePath);
-        const base64Content = fileBuffer.toString('base64');
-        
-        fileDataArray.push({
-          filename: fileName,
-          content: base64Content,
-        });
-
-        this.logger.log(`✓ Файл "${fileName}" успешно подготовлен (размер: ${fileBuffer.length} байт)`);
-      } catch (error) {
-        this.logger.error(`✗ Ошибка при чтении файла "${fileName}": ${error.message}`);
-        // Продолжаем обработку других файлов, но логируем ошибку
-      }
-    }
-
-    return fileDataArray;
   }
 
   /**
