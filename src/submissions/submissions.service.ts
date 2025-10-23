@@ -4,6 +4,7 @@ import { CreateSubmissionDto } from "./dto/create-submission.dto";
 import { UpdateSubmissionDto } from "./dto/update-submission.dto";
 import { EmailService } from "@/email/email.service";
 import { BitrixService } from "@/bitrix/bitrix.service";
+import { questionsConfig } from "@/email/questionnaire-config";
 
 @Injectable()
 export class SubmissionsService {
@@ -171,6 +172,58 @@ export class SubmissionsService {
   }
 
   /**
+   * Получает заголовок вопроса по ID
+   */
+  private getQuestionTitle(questionId: string): string {
+    const question = questionsConfig.find((q) => q.id === parseInt(questionId));
+    if (!question) {
+      return `Вопрос ${questionId}`;
+    }
+    // Удаляем номер из заголовка (например, "01 · " -> "")
+    return question.title.replace(/^\d+\s*·\s*/, '');
+  }
+
+  /**
+   * Получает человекочитаемую метку для ответа
+   */
+  private getAnswerLabel(questionId: string, value: unknown): string {
+    const question = questionsConfig.find((q) => q.id === parseInt(questionId));
+    
+    if (!question) return String(value);
+
+    // Если значение - массив (множественный выбор)
+    if (Array.isArray(value)) {
+      if (value.length === 0) return '—';
+      return value
+        .map((v) => {
+          const option = question.options?.find((opt) => opt.value === v);
+          return option?.label || v;
+        })
+        .join(', ');
+    }
+
+    // Если значение - объект (например, для feeder_sections)
+    if (typeof value === 'object' && value !== null) {
+      if (question.type === 'feeder_sections') {
+        const entries = Object.entries(value as Record<string, any>);
+        return entries
+          .map(([key, val]) => `${key}: ${val}`)
+          .join('; ');
+      }
+      return JSON.stringify(value, null, 2);
+    }
+
+    // Если пустое значение
+    if (value === '' || value === null || value === undefined) {
+      return '—';
+    }
+
+    // Ищем соответствующий option
+    const option = question.options?.find((opt) => opt.value === value);
+    return option?.label || String(value);
+  }
+
+  /**
    * Форматирует данные опросника для комментария в Bitrix
    */
   private formatQuestionnaireDataForBitrix(questionnaireData: any): string {
@@ -179,31 +232,30 @@ export class SubmissionsService {
     }
 
     let result = '';
-    const entries = Object.entries(questionnaireData).filter(
-      ([_, value]) =>
-        value !== '' &&
-        value !== null &&
-        value !== undefined &&
-        !(Array.isArray(value) && value.length === 0)
-    );
+    
+    // Фильтруем только заполненные ответы и сортируем по ID вопроса
+    const entries = Object.entries(questionnaireData)
+      .filter(
+        ([_, value]) =>
+          value !== '' &&
+          value !== null &&
+          value !== undefined &&
+          !(Array.isArray(value) && value.length === 0)
+      )
+      .sort(([a], [b]) => parseInt(a) - parseInt(b));
+
+    if (entries.length === 0) {
+      return 'Нет заполненных ответов';
+    }
 
     entries.forEach(([questionId, value]) => {
-      result += `Вопрос ${questionId}: ${this.formatValue(value)}\n`;
+      const questionTitle = this.getQuestionTitle(questionId);
+      const answerLabel = this.getAnswerLabel(questionId, value);
+      const paddedId = questionId.padStart(2, '0');
+
+      result += `${paddedId}. ${questionTitle}: ${answerLabel}\n`;
     });
 
     return result;
-  }
-
-  /**
-   * Форматирует значение для текстового представления
-   */
-  private formatValue(value: any): string {
-    if (Array.isArray(value)) {
-      return value.join(', ');
-    }
-    if (typeof value === 'object' && value !== null) {
-      return JSON.stringify(value);
-    }
-    return String(value);
   }
 }
