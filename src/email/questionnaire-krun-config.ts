@@ -218,10 +218,5 @@ export const krunQuestionsConfig: Question[] = [
       { value: "other", label: "Другое" },
     ],
   },
-  {
-    id: 26,
-    title: "26 · Дополнительные требования",
-    type: "text",
-  },
 ];
 
