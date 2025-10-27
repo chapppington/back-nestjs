@@ -4,7 +4,7 @@ import { CreateSubmissionDto } from "./dto/create-submission.dto";
 import { UpdateSubmissionDto } from "./dto/update-submission.dto";
 import { EmailService } from "@/email/email.service";
 import { BitrixService } from "@/bitrix/bitrix.service";
-import { questionsConfig } from "@/email/questionnaire-config";
+import { getQuestionTitle, getAnswerLabel, detectQuestionnaireType, QuestionnaireType } from "@/email/questionnaire-config-mapper";
 
 @Injectable()
 export class SubmissionsService {
@@ -136,7 +136,7 @@ export class SubmissionsService {
 
     if (meta && formType === 'QUESTIONNAIRE' && meta.questionnaireData) {
       leadComments += '\n\n=== Данные опросного листа ===\n';
-      leadComments += this.formatQuestionnaireDataForBitrix(meta.questionnaireData);
+      leadComments += this.formatQuestionnaireDataForBitrix(meta.questionnaireData, meta);
     } else if (meta) {
       leadComments += '\n\n=== Дополнительная информация ===\n';
       leadComments += JSON.stringify(meta, null, 2);
@@ -172,45 +172,31 @@ export class SubmissionsService {
   }
 
   /**
-   * Получает заголовок вопроса по ID
+   * Получает заголовок вопроса по ID с учетом типа опросника
    */
-  private getQuestionTitle(questionId: string): string {
-    const question = questionsConfig.find((q) => q.id === parseInt(questionId));
-    if (!question) {
-      return `Вопрос ${questionId}`;
-    }
+  private getQuestionTitleWithType(questionId: string, type: QuestionnaireType): string {
+    const title = getQuestionTitle(questionId, type);
     // Удаляем номер из заголовка (например, "01 · " -> "")
-    return question.title.replace(/^\d+\s*·\s*/, '');
+    return title.replace(/^\d+\s*·\s*/, '');
   }
 
   /**
-   * Получает человекочитаемую метку для ответа
+   * Получает человекочитаемую метку для ответа с учетом типа опросника
    */
-  private getAnswerLabel(questionId: string, value: unknown): string {
-    const question = questionsConfig.find((q) => q.id === parseInt(questionId));
-    
-    if (!question) return String(value);
-
+  private getAnswerLabelWithType(questionId: string, value: unknown, type: QuestionnaireType): string {
     // Если значение - массив (множественный выбор)
     if (Array.isArray(value)) {
       if (value.length === 0) return '—';
-      return value
-        .map((v) => {
-          const option = question.options?.find((opt) => opt.value === v);
-          return option?.label || v;
-        })
-        .join(', ');
+      const label = getAnswerLabel(questionId, value, type);
+      return label;
     }
 
     // Если значение - объект (например, для feeder_sections)
     if (typeof value === 'object' && value !== null) {
-      if (question.type === 'feeder_sections') {
-        const entries = Object.entries(value as Record<string, any>);
-        return entries
-          .map(([key, val]) => `${key}: ${val}`)
-          .join('; ');
-      }
-      return JSON.stringify(value, null, 2);
+      const entries = Object.entries(value as Record<string, any>);
+      return entries
+        .map(([key, val]) => `${key}: ${val}`)
+        .join('; ');
     }
 
     // Если пустое значение
@@ -218,18 +204,20 @@ export class SubmissionsService {
       return '—';
     }
 
-    // Ищем соответствующий option
-    const option = question.options?.find((opt) => opt.value === value);
-    return option?.label || String(value);
+    // Получаем метку через маппер
+    return getAnswerLabel(questionId, value, type);
   }
 
   /**
    * Форматирует данные опросника для комментария в Bitrix
    */
-  private formatQuestionnaireDataForBitrix(questionnaireData: any): string {
+  private formatQuestionnaireDataForBitrix(questionnaireData: any, meta?: any): string {
     if (!questionnaireData || typeof questionnaireData !== 'object') {
       return '';
     }
+
+    // Определяем тип опросника
+    const questionnaireType = detectQuestionnaireType(meta);
 
     let result = '';
     
@@ -249,8 +237,8 @@ export class SubmissionsService {
     }
 
     entries.forEach(([questionId, value]) => {
-      const questionTitle = this.getQuestionTitle(questionId);
-      const answerLabel = this.getAnswerLabel(questionId, value);
+      const questionTitle = this.getQuestionTitleWithType(questionId, questionnaireType);
+      const answerLabel = this.getAnswerLabelWithType(questionId, value, questionnaireType);
       const paddedId = questionId.padStart(2, '0');
 
       result += `${paddedId}. ${questionTitle}: ${answerLabel}\n`;

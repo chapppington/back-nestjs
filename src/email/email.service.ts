@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { ConfigService } from '@nestjs/config';
-import { questionsConfig } from './questionnaire-config';
+import { getQuestionTitle, getAnswerLabel, detectQuestionnaireType, QuestionnaireType } from './questionnaire-config-mapper';
 
 export interface SendEmailOptions {
   to: string;
@@ -95,45 +95,31 @@ export class EmailService {
   }
 
   /**
-   * Получает заголовок вопроса по ID
+   * Получает заголовок вопроса по ID с учетом типа опросника
    */
-  private getQuestionTitle(questionId: string): string {
-    const question = questionsConfig.find((q) => q.id === parseInt(questionId));
-    if (!question) {
-      return `Вопрос ${questionId}`;
-    }
+  private getQuestionTitleWithType(questionId: string, type: QuestionnaireType): string {
+    const title = getQuestionTitle(questionId, type);
     // Удаляем номер из заголовка (например, "01 · " -> "")
-    return question.title.replace(/^\d+\s*·\s*/, '');
+    return title.replace(/^\d+\s*·\s*/, '');
   }
 
   /**
-   * Получает человекочитаемую метку для ответа
+   * Получает человекочитаемую метку для ответа с учетом типа опросника
    */
-  private getAnswerLabel(questionId: string, value: unknown): string {
-    const question = questionsConfig.find((q) => q.id === parseInt(questionId));
-    
-    if (!question) return String(value);
-
+  private getAnswerLabelWithType(questionId: string, value: unknown, type: QuestionnaireType): string {
     // Если значение - массив (множественный выбор)
     if (Array.isArray(value)) {
       if (value.length === 0) return '—';
-      return value
-        .map((v) => {
-          const option = question.options?.find((opt) => opt.value === v);
-          return option?.label || v;
-        })
-        .join(', ');
+      const label = getAnswerLabel(questionId, value, type);
+      return label;
     }
 
     // Если значение - объект (например, для feeder_sections)
     if (typeof value === 'object' && value !== null) {
-      if (question.type === 'feeder_sections') {
-        const entries = Object.entries(value as Record<string, any>);
-        return entries
-          .map(([key, val]) => `${key}: ${val}`)
-          .join('; ');
-      }
-      return JSON.stringify(value, null, 2);
+      const entries = Object.entries(value as Record<string, any>);
+      return entries
+        .map(([key, val]) => `${key}: ${val}`)
+        .join('; ');
     }
 
     // Если пустое значение
@@ -141,18 +127,20 @@ export class EmailService {
       return '—';
     }
 
-    // Ищем соответствующий option
-    const option = question.options?.find((opt) => opt.value === value);
-    return option?.label || String(value);
+    // Получаем метку через маппер
+    return getAnswerLabel(questionId, value, type);
   }
 
   /**
    * Форматирует данные опросника в компактном виде (как в админке)
    */
-  private formatQuestionnaireDataAsHtml(questionnaireData: any): string {
+  private formatQuestionnaireDataAsHtml(questionnaireData: any, meta?: any): string {
     if (!questionnaireData || typeof questionnaireData !== 'object') {
       return '';
     }
+
+    // Определяем тип опросника
+    const questionnaireType = detectQuestionnaireType(meta);
 
     // Фильтруем только заполненные ответы и сортируем по ID вопроса
     const filledAnswers = Object.entries(questionnaireData)
@@ -177,8 +165,8 @@ export class EmailService {
     `;
 
     filledAnswers.forEach(([questionId, value]) => {
-      const questionTitle = this.getQuestionTitle(questionId);
-      const answerLabel = this.getAnswerLabel(questionId, value);
+      const questionTitle = this.getQuestionTitleWithType(questionId, questionnaireType);
+      const answerLabel = this.getAnswerLabelWithType(questionId, value, questionnaireType);
       const paddedId = questionId.padStart(2, '0');
 
       html += `
@@ -427,7 +415,7 @@ export class EmailService {
           <h3 style="color: #333; border-bottom: 2px solid #007bff; padding-bottom: 8px; margin-bottom: 15px;">
             📋 Данные опросного листа
           </h3>
-          ${this.formatQuestionnaireDataAsHtml(questionnaireData)}
+          ${this.formatQuestionnaireDataAsHtml(questionnaireData, meta)}
         </div>
       `;
     }
