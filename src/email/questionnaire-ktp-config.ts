@@ -20,7 +20,15 @@ export const questionsConfig: Question[] = [
     options: [
       { value: "mast", label: "Мачтовая (КТПМ)" },
       { value: "kiosk", label: "Киосковая (КТПК)" },
-      { value: "block", label: "Блочная (КТПБ)" },
+      {
+        value: "block",
+        label: "Блочная (КТПБ)",
+        nestedOptions: [
+          { value: "concrete", label: "Бетон" },
+          { value: "metal", label: "Металл" },
+          { value: "sandwich", label: "Сэндвич-панели" },
+        ],
+      },
       { value: "indoor", label: "Внутрицеховая" },
       { value: "attached", label: "Пристроенная" },
       { value: "stationary", label: "Стационарная" },
