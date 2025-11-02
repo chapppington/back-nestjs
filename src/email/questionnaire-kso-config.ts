@@ -30,13 +30,7 @@ export const ksoQuestionsConfig: Question[] = [
   {
     id: 3,
     title: "03 · Номинальный ток сборных шин, А",
-    options: [
-      { value: "400", label: "400 А" },
-      { value: "630", label: "630 А" },
-      { value: "1000", label: "1000 А" },
-      { value: "1600", label: "1600 А" },
-      { value: "2500", label: "2500 А" },
-    ],
+    type: "text",
   },
   {
     id: 4,
@@ -46,10 +40,7 @@ export const ksoQuestionsConfig: Question[] = [
   {
     id: 5,
     title: "05 · Род и значение оперативного тока",
-    options: [
-      { value: "220_ac", label: "~220В AC" },
-      { value: "220_dc", label: "=220В DC" },
-    ],
+    type: "text",
   },
   {
     id: 6,
@@ -68,8 +59,8 @@ export const ksoQuestionsConfig: Question[] = [
       { value: "incoming", label: "Ввод" },
       { value: "sectionalizing", label: "Секционирование" },
       { value: "outgoing", label: "Отходящая линия" },
-      { value: "vt", label: "ТН (Трансформатор напряжения)" },
-      { value: "tsn", label: "ТСН (Трансформатор собственных нужд)" },
+      { value: "vt", label: "ТН" },
+      { value: "tsn", label: "ТСН" },
       { value: "other", label: "Другое" },
     ],
   },
