@@ -1,5 +1,6 @@
 import { questionsConfig as ktpQuestionsConfig } from './questionnaire-ktp-config';
 import { krunQuestionsConfig } from './questionnaire-krun-config';
+import { ksoQuestionsConfig } from './questionnaire-kso-config';
 
 interface QuestionOption {
   value: string | number;
@@ -27,7 +28,7 @@ export function getQuestionnaireConfig(type: QuestionnaireType): Question[] {
   const configMap: Record<QuestionnaireType, Question[]> = {
     ktp: ktpQuestionsConfig,
     krun: krunQuestionsConfig,
-    kso: [], // TODO: добавить конфигурацию для КСО
+    kso: ksoQuestionsConfig,
   };
 
   return configMap[type] || ktpQuestionsConfig; // по умолчанию возвращаем КТП
