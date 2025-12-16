@@ -29,9 +29,6 @@ FROM node:20-alpine AS production
 
 WORKDIR /app
 
-# Install netcat for wait script
-RUN apk add --no-cache netcat-openbsd
-
 # Install pnpm (version compatible with lockfile v6.0)
 RUN npm install -g pnpm@latest
 
@@ -50,10 +47,6 @@ RUN pnpm prisma generate
 # Copy built application from builder
 COPY --from=builder /app/dist ./dist
 
-# Copy wait script
-COPY wait-for-db.sh /app/wait-for-db.sh
-RUN chmod +x /app/wait-for-db.sh
-
 # Create uploads directory
 RUN mkdir -p uploads
 
@@ -61,4 +54,5 @@ RUN mkdir -p uploads
 EXPOSE 4200
 
 # Run migrations and start the application
-CMD ["sh", "-c", "/app/wait-for-db.sh postgres 5432 && pnpm prisma migrate deploy && pnpm start:prod"]
+# Wait for postgres using timeout command (built-in)
+CMD ["sh", "-c", "echo 'Waiting for postgres...' && sleep 10 && pnpm prisma migrate deploy && pnpm start:prod"]
